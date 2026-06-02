@@ -1,128 +1,73 @@
 package br.ufscar.dc.dsw.controller;
 
-import java.io.IOException;
 import java.util.List;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import br.ufscar.dc.dsw.dao.CasaDAO;
 import br.ufscar.dc.dsw.domain.Casa;
 import br.ufscar.dc.dsw.domain.Usuario;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-@WebServlet(urlPatterns = {"/casas/*"})
-public class CasaController extends HttpServlet {
+@Controller
+@RequestMapping("/casas")
+public class CasaController {
 
-    private static final long serialVersionUID = 1L;
+    private final CasaDAO casaDAO = new CasaDAO();
 
-    private CasaDAO casaDAO;
-
-    @Override
-    public void init() {
-        casaDAO = new CasaDAO();
-    }
-
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        String action = request.getPathInfo();
-        if (action == null || "/".equals(action)) {
-            listar(request, response);
-            return;
-        }
-
-        switch (action) {
-            case "/novo":
-                solicitarFormulario(request, response);
-                break;
-            case "/edicao":
-                editar(request, response);
-                break;
-            case "/excluir":
-                excluir(request, response);
-                break;
-            default:
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                break;
-        }
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        String action = request.getPathInfo();
-        if (action == null) {
-            response.sendRedirect(request.getContextPath() + "/casas");
-            return;
-        }
-
-        switch (action) {
-            case "/salvar":
-                salvar(request, response);
-                break;
-            default:
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                break;
-        }
-    }
-
-    private void listar(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    @GetMapping
+    public String listar(HttpServletRequest request, Model model) {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("usuarioLogado") == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
-            return;
+            return "redirect:/login.jsp";
         }
         List<Casa> lista = casaDAO.getAll();
-        request.setAttribute("casas", lista);
-        request.getRequestDispatcher("/casas.jsp").forward(request, response);
+        model.addAttribute("casas", lista);
+        return "casas";
     }
 
-    private void solicitarFormulario(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    @GetMapping("/novo")
+    public String solicitarFormulario(HttpServletRequest request) {
         Usuario usuario = getUsuarioLogado(request);
         if (usuario == null || !"ADMIN".equals(usuario.getPapel())) {
-            response.sendRedirect(request.getContextPath() + "/casas");
-            return;
+            return "redirect:/casas";
         }
-        request.getRequestDispatcher("/casa-form.jsp").forward(request, response);
+        return "casa-form";
     }
 
-    private void editar(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    @GetMapping("/edicao")
+    public String editar(HttpServletRequest request, Model model) {
         Usuario usuario = getUsuarioLogado(request);
         if (usuario == null || !"ADMIN".equals(usuario.getPapel())) {
-            response.sendRedirect(request.getContextPath() + "/casas");
-            return;
+            return "redirect:/casas";
         }
         Long id = Long.parseLong(request.getParameter("id"));
         Casa casa = casaDAO.get(id);
-        request.setAttribute("casa", casa);
-        request.getRequestDispatcher("/casa-form.jsp").forward(request, response);
+        model.addAttribute("casa", casa);
+        return "casa-form";
     }
 
-    private void excluir(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    @GetMapping("/excluir")
+    public String excluir(HttpServletRequest request) {
         Usuario usuario = getUsuarioLogado(request);
         if (usuario == null || !"ADMIN".equals(usuario.getPapel())) {
-            response.sendRedirect(request.getContextPath() + "/casas");
-            return;
+            return "redirect:/casas";
         }
         Long id = Long.parseLong(request.getParameter("id"));
-        Casa casa = new Casa(id);
-        casaDAO.delete(casa);
-        response.sendRedirect(request.getContextPath() + "/casas");
+        casaDAO.delete(new Casa(id));
+        return "redirect:/casas";
     }
 
-    private void salvar(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    @PostMapping("/salvar")
+    public String salvar(HttpServletRequest request, Model model) {
         Usuario usuario = getUsuarioLogado(request);
         if (usuario == null || !"ADMIN".equals(usuario.getPapel())) {
-            response.sendRedirect(request.getContextPath() + "/casas");
-            return;
+            return "redirect:/casas";
         }
         String idParam = request.getParameter("id");
         String nome = request.getParameter("nome");
@@ -131,27 +76,25 @@ public class CasaController extends HttpServlet {
         String diariaParam = request.getParameter("diaria");
         String capacidadeParam = request.getParameter("capacidade");
 
-        Float diaria = 0f;
-        Integer capacidade = 0;
+        Float diaria;
+        Integer capacidade;
         try {
             diaria = Float.parseFloat(diariaParam);
             capacidade = Integer.parseInt(capacidadeParam);
         } catch (NumberFormatException e) {
-            request.setAttribute("erro", "Preencha corretamente diária e capacidade.");
-            request.getRequestDispatcher("/casa-form.jsp").forward(request, response);
-            return;
+            model.addAttribute("erro", "Preencha corretamente diária e capacidade.");
+            return "casa-form";
         }
 
-        Casa casa;
         if (idParam == null || idParam.isBlank()) {
-            casa = new Casa(nome, endereco, descricao, diaria, capacidade);
+            Casa casa = new Casa(nome, endereco, descricao, diaria, capacidade);
             casaDAO.insert(casa);
         } else {
             Long id = Long.parseLong(idParam);
-            casa = new Casa(id, nome, endereco, descricao, diaria, capacidade);
+            Casa casa = new Casa(id, nome, endereco, descricao, diaria, capacidade);
             casaDAO.update(casa);
         }
-        response.sendRedirect(request.getContextPath() + "/casas");
+        return "redirect:/casas";
     }
 
     private Usuario getUsuarioLogado(HttpServletRequest request) {

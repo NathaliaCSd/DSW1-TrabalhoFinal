@@ -1,187 +1,124 @@
 package br.ufscar.dc.dsw.controller;
 
-import java.io.IOException;
 import java.util.List;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import br.ufscar.dc.dsw.dao.UsuarioDAO;
 import br.ufscar.dc.dsw.domain.Usuario;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-@WebServlet(urlPatterns = {"/usuario/*"})
-public class UsuarioController extends HttpServlet {
+@Controller
+@RequestMapping("/usuario")
+public class UsuarioController {
 
-    private static final long serialVersionUID = 1L;
+    private final UsuarioDAO usuarioDAO = new UsuarioDAO();
 
-    private UsuarioDAO usuarioDAO;
-
-    @Override
-    public void init() {
-        usuarioDAO = new UsuarioDAO();
+    @GetMapping("/cadastro")
+    public String cadastro() {
+        return "register";
     }
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        String action = request.getPathInfo();
-        if (action == null || "/".equals(action)) {
-            response.sendRedirect(request.getContextPath() + "/index.jsp");
-            return;
+    @GetMapping("/logout")
+    public String logout(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
         }
-
-        switch (action) {
-            case "/cadastro":
-                request.getRequestDispatcher("/register.jsp").forward(request, response);
-                break;
-            case "/logout":
-                HttpSession session = request.getSession(false);
-                if (session != null) {
-                    session.invalidate();
-                }
-                response.sendRedirect(request.getContextPath() + "/index.jsp");
-                break;
-            case "/lista":
-                listar(request, response);
-                break;
-            case "/novo":
-                solicitarFormulario(request, response);
-                break;
-            case "/edicao":
-                editar(request, response);
-                break;
-            case "/excluir":
-                excluir(request, response);
-                break;
-            default:
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                break;
-        }
+        return "redirect:/index.jsp";
     }
 
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        String action = request.getPathInfo();
-        if (action == null) {
-            response.sendRedirect(request.getContextPath() + "/index.jsp");
-            return;
-        }
-
-        switch (action) {
-            case "/cadastro":
-                cadastrar(request, response);
-                break;
-            case "/login":
-                login(request, response);
-                break;
-            case "/salvar":
-                salvar(request, response);
-                break;
-            default:
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                break;
-        }
-    }
-
-    private void listar(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    @GetMapping("/lista")
+    public String listar(HttpServletRequest request, Model model) {
         Usuario usuario = getUsuarioLogado(request);
         if (usuario == null || !"ADMIN".equals(usuario.getPapel())) {
-            response.sendRedirect(request.getContextPath() + "/index.jsp");
-            return;
+            return "redirect:/index.jsp";
         }
         List<Usuario> lista = usuarioDAO.getAll();
-        request.setAttribute("usuarios", lista);
-        request.getRequestDispatcher("/usuarios.jsp").forward(request, response);
+        model.addAttribute("usuarios", lista);
+        return "usuarios";
     }
 
-    private void solicitarFormulario(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    @GetMapping("/novo")
+    public String solicitarFormulario(HttpServletRequest request) {
         Usuario usuario = getUsuarioLogado(request);
         if (usuario == null || !"ADMIN".equals(usuario.getPapel())) {
-            response.sendRedirect(request.getContextPath() + "/index.jsp");
-            return;
+            return "redirect:/index.jsp";
         }
-        request.getRequestDispatcher("/usuario-form.jsp").forward(request, response);
+        return "usuario-form";
     }
 
-    private void editar(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    @GetMapping("/edicao")
+    public String editar(HttpServletRequest request, Model model) {
         Usuario usuario = getUsuarioLogado(request);
         if (usuario == null || !"ADMIN".equals(usuario.getPapel())) {
-            response.sendRedirect(request.getContextPath() + "/index.jsp");
-            return;
+            return "redirect:/index.jsp";
         }
         Long id = Long.parseLong(request.getParameter("id"));
         Usuario usuarioEdicao = usuarioDAO.get(id);
-        request.setAttribute("usuario", usuarioEdicao);
-        request.getRequestDispatcher("/usuario-form.jsp").forward(request, response);
+        model.addAttribute("usuario", usuarioEdicao);
+        return "usuario-form";
     }
 
-    private void excluir(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    @GetMapping("/excluir")
+    public String excluir(HttpServletRequest request) {
         Usuario usuario = getUsuarioLogado(request);
         if (usuario == null || !"ADMIN".equals(usuario.getPapel())) {
-            response.sendRedirect(request.getContextPath() + "/index.jsp");
-            return;
+            return "redirect:/index.jsp";
         }
         Long id = Long.parseLong(request.getParameter("id"));
-        Usuario usuarioExcluir = new Usuario(id);
-        usuarioDAO.delete(usuarioExcluir);
-        response.sendRedirect(request.getContextPath() + "/usuario/lista");
+        usuarioDAO.delete(new Usuario(id));
+        return "redirect:/usuario/lista";
     }
 
-    private void cadastrar(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    @PostMapping("/cadastro")
+    public String cadastrar(HttpServletRequest request, Model model) {
         String nome = request.getParameter("nome");
         String login = request.getParameter("login");
         String senha = request.getParameter("senha");
 
         if (nome == null || login == null || senha == null || nome.isBlank() || login.isBlank() || senha.isBlank()) {
-            request.setAttribute("erro", "Preencha todos os campos para criar a conta.");
-            request.getRequestDispatcher("/register.jsp").forward(request, response);
-            return;
+            model.addAttribute("erro", "Preencha todos os campos para criar a conta.");
+            return "register";
         }
 
         if (usuarioDAO.getByLogin(login) != null) {
-            request.setAttribute("erro", "O login já existe. Escolha outro nome de usuário.");
-            request.getRequestDispatcher("/register.jsp").forward(request, response);
-            return;
+            model.addAttribute("erro", "O login já existe. Escolha outro nome de usuário.");
+            return "register";
         }
 
         Usuario usuario = new Usuario(nome, login, senha, "USER");
         usuarioDAO.insert(usuario);
-        request.setAttribute("mensagem", "Conta criada com sucesso. Faça login abaixo.");
-        request.getRequestDispatcher("/login.jsp").forward(request, response);
+        model.addAttribute("mensagem", "Conta criada com sucesso. Faça login abaixo.");
+        return "login";
     }
 
-    private void login(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    @PostMapping("/login")
+    public String login(HttpServletRequest request, Model model) {
         String login = request.getParameter("login");
         String senha = request.getParameter("senha");
 
         Usuario usuario = usuarioDAO.authenticate(login, senha);
         if (usuario == null) {
-            request.setAttribute("erro", "Login ou senha incorretos.");
-            request.getRequestDispatcher("/login.jsp").forward(request, response);
-            return;
+            model.addAttribute("erro", "Login ou senha incorretos.");
+            return "login";
         }
 
         HttpSession session = request.getSession();
         session.setAttribute("usuarioLogado", usuario);
-        response.sendRedirect(request.getContextPath() + "/casas");
+        return "redirect:/casas";
     }
 
-    private void salvar(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    @PostMapping("/salvar")
+    public String salvar(HttpServletRequest request, Model model) {
         Usuario usuario = getUsuarioLogado(request);
         if (usuario == null || !"ADMIN".equals(usuario.getPapel())) {
-            response.sendRedirect(request.getContextPath() + "/index.jsp");
-            return;
+            return "redirect:/index.jsp";
         }
 
         String idParam = request.getParameter("id");
@@ -191,21 +128,18 @@ public class UsuarioController extends HttpServlet {
         String papel = request.getParameter("papel");
 
         if (nome == null || login == null || papel == null || nome.isBlank() || login.isBlank() || papel.isBlank()) {
-            request.setAttribute("erro", "Preencha todos os campos obrigatórios.");
-            request.getRequestDispatcher("/usuario-form.jsp").forward(request, response);
-            return;
+            model.addAttribute("erro", "Preencha todos os campos obrigatórios.");
+            return "usuario-form";
         }
 
         if (idParam == null || idParam.isBlank()) {
             if (senha == null || senha.isBlank()) {
-                request.setAttribute("erro", "Senha é obrigatória para novo usuário.");
-                request.getRequestDispatcher("/usuario-form.jsp").forward(request, response);
-                return;
+                model.addAttribute("erro", "Senha é obrigatória para novo usuário.");
+                return "usuario-form";
             }
             if (usuarioDAO.getByLogin(login) != null) {
-                request.setAttribute("erro", "O login já existe. Escolha outro nome de usuário.");
-                request.getRequestDispatcher("/usuario-form.jsp").forward(request, response);
-                return;
+                model.addAttribute("erro", "O login já existe. Escolha outro nome de usuário.");
+                return "usuario-form";
             }
             Usuario novo = new Usuario(nome, login, senha, papel);
             usuarioDAO.insert(novo);
@@ -213,8 +147,7 @@ public class UsuarioController extends HttpServlet {
             Long id = Long.parseLong(idParam);
             Usuario existente = usuarioDAO.get(id);
             if (existente == null) {
-                response.sendRedirect(request.getContextPath() + "/usuario/lista");
-                return;
+                return "redirect:/usuario/lista";
             }
             if (senha == null || senha.isBlank()) {
                 senha = existente.getSenha();
@@ -225,7 +158,7 @@ public class UsuarioController extends HttpServlet {
             existente.setPapel(papel);
             usuarioDAO.update(existente);
         }
-        response.sendRedirect(request.getContextPath() + "/usuario/lista");
+        return "redirect:/usuario/lista";
     }
 
     private Usuario getUsuarioLogado(HttpServletRequest request) {

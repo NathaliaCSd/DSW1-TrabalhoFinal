@@ -17,7 +17,11 @@ abstract public class GenericDAO {
     protected Connection getConnection() throws SQLException {
         String host = System.getenv().getOrDefault("POSTGRES_HOST", "localhost");
         String user = System.getenv().getOrDefault("POSTGRES_USER", "petbnbuser");
-String password = System.getenv().getOrDefault("POSTGRES_PASSWORD", "admin");
-        return DriverManager.getConnection("jdbc:postgresql://" + host + ":5432/PetBnB", user, password);
+        String password = System.getenv().getOrDefault("POSTGRES_PASSWORD", "admin");
+        String url = System.getenv().getOrDefault("SPRING_DATASOURCE_URL",
+                "jdbc:postgresql://" + host + ":5432/PetBnB");
+        user = System.getenv().getOrDefault("SPRING_DATASOURCE_USERNAME", user);
+        password = System.getenv().getOrDefault("SPRING_DATASOURCE_PASSWORD", password);
+        return DriverManager.getConnection(url, user, password);
     }
 }
