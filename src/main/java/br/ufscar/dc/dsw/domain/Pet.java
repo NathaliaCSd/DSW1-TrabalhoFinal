@@ -9,7 +9,6 @@ public class Pet {
     private String porte;
     private Boolean castrado;
     private String descricao;
-    private Usuario usuario;
 
     public Pet() {
     }
@@ -18,18 +17,17 @@ public class Pet {
         this.id = id;
     }
 
-    public Pet(String nome, String raca, Integer idade, String porte, Boolean castrado, String descricao, Usuario usuario) {
+    public Pet(String nome, String raca, Integer idade, String porte, Boolean castrado, String descricao) {
         this.nome = nome;
         this.raca = raca;
         this.idade = idade;
         this.porte = porte;
         this.castrado = castrado;
         this.descricao = descricao;
-        this.usuario = usuario;
     }
 
-    public Pet(Long id, String nome, String raca, Integer idade, String porte, Boolean castrado, String descricao, Usuario usuario) {
-        this(nome, raca, idade, porte, castrado, descricao, usuario);
+    public Pet(Long id, String nome, String raca, Integer idade, String porte, Boolean castrado, String descricao) {
+        this(nome, raca, idade, porte, castrado, descricao);
         this.id = id;
     }
 
@@ -87,13 +85,5 @@ public class Pet {
 
     public void setDescricao(String descricao) {
         this.descricao = descricao;
-    }
-
-    public Usuario getUsuario() {
-        return usuario;
-    }
-
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
     }
 }

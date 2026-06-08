@@ -23,60 +23,56 @@ public class PetController {
     @GetMapping
     public String listar(HttpServletRequest request, Model model) {
         Usuario usuario = getUsuarioLogado(request);
-        if (usuario == null) {
-            return "redirect:/login.jsp";
-        }
-        List<Pet> lista = "ADMIN".equals(usuario.getPapel()) ? petDAO.getAll()
-                : petDAO.getAllByUsuario(usuario.getId());
+        Pet petLogado = getPetLogado(request);
+        List<Pet> lista = petDAO.getAll();
         model.addAttribute("pets", lista);
+        model.addAttribute("petLogado", petLogado);
+        model.addAttribute("usuarioLogado", usuario);
         return "pets";
     }
 
     @GetMapping("/novo")
     public String solicitarFormulario(HttpServletRequest request) {
-        Usuario usuario = getUsuarioLogado(request);
-        if (usuario == null) {
-            return "redirect:/login.jsp";
-        }
         return "pet-form";
     }
 
     @GetMapping("/edicao")
     public String editar(HttpServletRequest request, Model model) {
-        Usuario usuario = getUsuarioLogado(request);
-        if (usuario == null) {
-            return "redirect:/login.jsp";
-        }
         Long id = Long.parseLong(request.getParameter("id"));
         Pet pet = petDAO.get(id);
-        if (pet == null || (!"ADMIN".equals(usuario.getPapel()) && !usuario.getId().equals(pet.getUsuario().getId()))) {
+        Usuario usuario = getUsuarioLogado(request);
+        Pet petLogado = getPetLogado(request);
+        if (pet == null || (usuario == null || !"ADMIN".equals(usuario.getPapel())) && (petLogado == null || !petLogado.getId().equals(pet.getId()))) {
             return "redirect:/pets";
         }
         model.addAttribute("pet", pet);
+        model.addAttribute("petLogado", petLogado);
+        model.addAttribute("usuarioLogado", usuario);
         return "pet-form";
     }
 
     @GetMapping("/excluir")
     public String excluir(HttpServletRequest request) {
-        Usuario usuario = getUsuarioLogado(request);
-        if (usuario == null) {
-            return "redirect:/login.jsp";
-        }
         Long id = Long.parseLong(request.getParameter("id"));
         Pet pet = petDAO.get(id);
-        if (pet == null || (!"ADMIN".equals(usuario.getPapel()) && !usuario.getId().equals(pet.getUsuario().getId()))) {
+        Usuario usuario = getUsuarioLogado(request);
+        Pet petLogado = getPetLogado(request);
+        if (pet == null || ((usuario == null || !"ADMIN".equals(usuario.getPapel()))
+                && (petLogado == null || !petLogado.getId().equals(pet.getId())))) {
             return "redirect:/pets";
         }
         petDAO.delete(pet);
+        if (petLogado != null && petLogado.getId().equals(pet.getId())) {
+            HttpSession session = request.getSession(false);
+            if (session != null) {
+                session.removeAttribute("petLogado");
+            }
+        }
         return "redirect:/pets";
     }
 
     @PostMapping("/salvar")
     public String salvar(HttpServletRequest request, Model model) {
-        Usuario usuario = getUsuarioLogado(request);
-        if (usuario == null) {
-            return "redirect:/login.jsp";
-        }
         String idParam = request.getParameter("id");
         String nome = request.getParameter("nome");
         String raca = request.getParameter("raca");
@@ -100,17 +96,47 @@ public class PetController {
         }
 
         Boolean castrado = castradoParam != null;
+
         if (idParam == null || idParam.isBlank()) {
-            Pet pet = new Pet(nome, raca, idade, porte, castrado, descricao, usuario);
+            Pet pet = new Pet(nome, raca, idade, porte, castrado, descricao);
             petDAO.insert(pet);
+            HttpSession session = request.getSession();
+            session.setAttribute("petLogado", pet);
         } else {
             Long id = Long.parseLong(idParam);
             Pet existing = petDAO.get(id);
-            if (existing == null || (!"ADMIN".equals(usuario.getPapel()) && !usuario.getId().equals(existing.getUsuario().getId()))) {
+            if (existing == null) {
                 return "redirect:/pets";
             }
-            Pet pet = new Pet(id, nome, raca, idade, porte, castrado, descricao, existing.getUsuario());
+            Pet pet = new Pet(id, nome, raca, idade, porte, castrado, descricao);
             petDAO.update(pet);
+            HttpSession session = request.getSession(false);
+            if (session != null) {
+                Pet petLogado = (Pet) session.getAttribute("petLogado");
+                if (petLogado != null && petLogado.getId().equals(pet.getId())) {
+                    session.setAttribute("petLogado", pet);
+                }
+            }
+        }
+        return "redirect:/pets";
+    }
+
+    @GetMapping("/selecionar")
+    public String selecionar(HttpServletRequest request) {
+        Long id = Long.parseLong(request.getParameter("id"));
+        Pet pet = petDAO.get(id);
+        if (pet != null) {
+            HttpSession session = request.getSession();
+            session.setAttribute("petLogado", pet);
+        }
+        return "redirect:/pets";
+    }
+
+    @GetMapping("/sair")
+    public String sair(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.removeAttribute("petLogado");
         }
         return "redirect:/pets";
     }
@@ -121,5 +147,13 @@ public class PetController {
             return null;
         }
         return (Usuario) session.getAttribute("usuarioLogado");
+    }
+
+    private Pet getPetLogado(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            return null;
+        }
+        return (Pet) session.getAttribute("petLogado");
     }
 }

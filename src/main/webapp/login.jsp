@@ -7,8 +7,11 @@
 <html>
 <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title><fmt:message key="login.title"/> | <fmt:message key="app.title"/></title>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
 </head>
 <body>
 <div class="container">
@@ -30,13 +33,19 @@
     </c:if>
 
     <form action="${pageContext.request.contextPath}/usuario/login" method="post" class="form">
-        <label><fmt:message key="label.login"/></label>
-        <input type="text" name="login" required />
-        <label><fmt:message key="label.password"/></label>
-        <input type="password" name="senha" required />
-        <button type="submit"><fmt:message key="button.login"/></button>
+        <div class="form-group">
+            <label><fmt:message key="label.login"/></label>
+            <input class="form-control" type="text" name="login" required />
+        </div>
+        <div class="form-group">
+            <label><fmt:message key="label.password"/></label>
+            <input class="form-control" type="password" name="senha" required />
+        </div>
+        <button class="btn btn-primary" type="submit"><fmt:message key="button.login"/></button>
     </form>
     <p class="center"><fmt:message key="login.no_account"/> <a href="${pageContext.request.contextPath}/usuario/cadastro"><fmt:message key="button.register"/></a></p>
 </div>
+<script src="js/jquery.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
 </body>
 </html>

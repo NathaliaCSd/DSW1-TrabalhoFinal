@@ -25,8 +25,16 @@ CREATE TABLE IF NOT EXISTS Pet (
     idade INT NOT NULL,
     porte VARCHAR(20) NOT NULL,
     castrado BOOLEAN NOT NULL,
-    descricao VARCHAR(512),
-    usuario_id BIGINT NOT NULL REFERENCES Usuario(id) ON DELETE CASCADE
+    descricao VARCHAR(512)
+);
+
+CREATE TABLE IF NOT EXISTS Reserva (
+    id BIGSERIAL PRIMARY KEY,
+    pet_id BIGINT NOT NULL REFERENCES Pet(id) ON DELETE CASCADE,
+    casa_id BIGINT NOT NULL REFERENCES Casa(id) ON DELETE CASCADE,
+    data_inicio DATE NOT NULL,
+    data_fim DATE NOT NULL,
+    total NUMERIC(10,2) NOT NULL
 );
 
 INSERT INTO Usuario (nome, login, senha, papel) VALUES ('Administrador', 'admin', 'admin', 'ADMIN');
@@ -37,6 +45,6 @@ INSERT INTO Casa (nome, endereco, descricao, diaria, capacidade) VALUES
 ('Refúgio Pet Feliz', 'Av. dos Pinheiros, 45', 'Casa ampla com quintal seguro para passeios diários.', 180.00, 5),
 ('Recanto Canino', 'Rua do Sol, 78', 'Estadia tranquila com área coberta e cuidados especializados.', 150.00, 4);
 
-INSERT INTO Pet (nome, raca, idade, porte, castrado, descricao, usuario_id) VALUES
-('Luna', 'Shih Tzu', 4, 'Pequeno', true, 'Adora carinho e tem energia tranquila.', 2),
-('Bongo', 'Labrador', 3, 'Grande', false, 'Muito amigável e gosta de brincar com crianças.', 2);
+INSERT INTO Pet (nome, raca, idade, porte, castrado, descricao) VALUES
+('Luna', 'Shih Tzu', 4, 'Pequeno', true, 'Adora carinho e tem energia tranquila.'),
+('Bongo', 'Labrador', 3, 'Grande', false, 'Muito amigável e gosta de brincar com crianças.');

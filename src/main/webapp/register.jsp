@@ -7,8 +7,11 @@
 <html>
 <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title><fmt:message key="register.title"/> | <fmt:message key="app.title"/></title>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
 </head>
 <body>
 <div class="container">
@@ -27,13 +30,19 @@
     </c:if>
 
     <form action="${pageContext.request.contextPath}/usuario/cadastro" method="post" class="form">
-        <label><fmt:message key="register.name"/></label>
-        <input type="text" name="nome" required />
-        <label><fmt:message key="label.login"/></label>
-        <input type="text" name="login" required />
-        <label><fmt:message key="register.password"/></label>
-        <input type="password" name="senha" required />
-        <button type="submit"><fmt:message key="button.create_account"/></button>
+        <div class="form-group">
+            <label><fmt:message key="register.name"/></label>
+            <input class="form-control" type="text" name="nome" required />
+        </div>
+        <div class="form-group">
+            <label><fmt:message key="label.login"/></label>
+            <input class="form-control" type="text" name="login" required />
+        </div>
+        <div class="form-group">
+            <label><fmt:message key="register.password"/></label>
+            <input class="form-control" type="password" name="senha" required />
+        </div>
+        <button class="btn btn-primary" type="submit"><fmt:message key="button.create_account"/></button>
     </form>
     <p class="center"><fmt:message key="register.already_account"/> <a href="${pageContext.request.contextPath}/login.jsp"><fmt:message key="button.login"/></a></p>
 </div>

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import br.ufscar.dc.dsw.dao.CasaDAO;
 import br.ufscar.dc.dsw.domain.Casa;
+import br.ufscar.dc.dsw.domain.Pet;
 import br.ufscar.dc.dsw.domain.Usuario;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -22,12 +23,12 @@ public class CasaController {
 
     @GetMapping
     public String listar(HttpServletRequest request, Model model) {
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("usuarioLogado") == null) {
-            return "redirect:/login.jsp";
-        }
+        Usuario usuario = getUsuarioLogado(request);
+        Pet pet = getPetLogado(request);
         List<Casa> lista = casaDAO.getAll();
         model.addAttribute("casas", lista);
+        model.addAttribute("usuarioLogado", usuario);
+        model.addAttribute("petLogado", pet);
         return "casas";
     }
 
@@ -103,5 +104,13 @@ public class CasaController {
             return null;
         }
         return (Usuario) session.getAttribute("usuarioLogado");
+    }
+
+    private Pet getPetLogado(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            return null;
+        }
+        return (Pet) session.getAttribute("petLogado");
     }
 }
