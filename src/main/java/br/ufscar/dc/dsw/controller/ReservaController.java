@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import br.ufscar.dc.dsw.dao.CasaDAO;
-import br.ufscar.dc.dsw.dao.ReservaDAO;
+import br.ufscar.dc.dsw.dao.CasaRepository;
+import br.ufscar.dc.dsw.dao.ReservaRepository;
 import br.ufscar.dc.dsw.domain.Casa;
 import br.ufscar.dc.dsw.domain.Pet;
 import br.ufscar.dc.dsw.domain.Reserva;
@@ -23,16 +23,21 @@ import jakarta.servlet.http.HttpSession;
 @RequestMapping("/reservas")
 public class ReservaController {
 
-    private final ReservaDAO reservaDAO = new ReservaDAO();
-    private final CasaDAO casaDAO = new CasaDAO();
+    private final ReservaRepository reservaRepository;
+    private final CasaRepository casaRepository;
+
+    public ReservaController(ReservaRepository reservaRepository, CasaRepository casaRepository) {
+        this.reservaRepository = reservaRepository;
+        this.casaRepository = casaRepository;
+    }
 
     @GetMapping
     public String listar(HttpServletRequest request, Model model) {
         Usuario usuario = getUsuarioLogado(request);
         Pet pet = getPetLogado(request);
         List<Reserva> lista = (usuario != null && "ADMIN".equals(usuario.getPapel()))
-                ? reservaDAO.getAll()
-                : pet != null ? reservaDAO.getAllByPet(pet.getId()) : null;
+                ? reservaRepository.findAll()
+                : pet != null ? reservaRepository.findByPetId(pet.getId()) : null;
         model.addAttribute("reservas", lista);
         model.addAttribute("petLogado", pet);
         model.addAttribute("usuarioLogado", usuario);
@@ -46,7 +51,7 @@ public class ReservaController {
             return "redirect:/pets";
         }
         Long casaId = Long.parseLong(request.getParameter("casaId"));
-        Casa casa = casaDAO.get(casaId);
+        Casa casa = casaRepository.findById(casaId).orElse(null);
         if (casa == null) {
             return "redirect:/casas";
         }
@@ -72,7 +77,7 @@ public class ReservaController {
         }
 
         Long casaId = Long.parseLong(casaIdParam);
-        Casa casa = casaDAO.get(casaId);
+        Casa casa = casaRepository.findById(casaId).orElse(null);
         if (casa == null) {
             return "redirect:/casas";
         }
@@ -97,7 +102,7 @@ public class ReservaController {
 
         Float total = dias * casa.getDiaria();
         Reserva reserva = new Reserva(pet, casa, dataInicio, dataFim, total);
-        reservaDAO.insert(reserva);
+        reservaRepository.save(reserva);
         return "redirect:/reservas";
     }
 

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import br.ufscar.dc.dsw.dao.UsuarioDAO;
+import br.ufscar.dc.dsw.dao.UsuarioRepository;
 import br.ufscar.dc.dsw.domain.Usuario;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -17,7 +17,11 @@ import jakarta.servlet.http.HttpSession;
 @RequestMapping("/usuario")
 public class UsuarioController {
 
-    private final UsuarioDAO usuarioDAO = new UsuarioDAO();
+    private final UsuarioRepository usuarioRepository;
+
+    public UsuarioController(UsuarioRepository usuarioRepository) {
+        this.usuarioRepository = usuarioRepository;
+    }
 
     @GetMapping("/cadastro")
     public String cadastro() {
@@ -39,7 +43,7 @@ public class UsuarioController {
         if (usuario == null || !"ADMIN".equals(usuario.getPapel())) {
             return "redirect:/index.jsp";
         }
-        List<Usuario> lista = usuarioDAO.getAll();
+        List<Usuario> lista = usuarioRepository.findAll();
         model.addAttribute("usuarios", lista);
         return "usuarios";
     }
@@ -60,7 +64,7 @@ public class UsuarioController {
             return "redirect:/index.jsp";
         }
         Long id = Long.parseLong(request.getParameter("id"));
-        Usuario usuarioEdicao = usuarioDAO.get(id);
+        Usuario usuarioEdicao = usuarioRepository.findById(id).orElse(null);
         model.addAttribute("usuario", usuarioEdicao);
         return "usuario-form";
     }
@@ -72,7 +76,7 @@ public class UsuarioController {
             return "redirect:/index.jsp";
         }
         Long id = Long.parseLong(request.getParameter("id"));
-        usuarioDAO.delete(new Usuario(id));
+        usuarioRepository.deleteById(id);
         return "redirect:/usuario/lista";
     }
 
@@ -87,13 +91,13 @@ public class UsuarioController {
             return "register";
         }
 
-        if (usuarioDAO.getByLogin(login) != null) {
+        if (usuarioRepository.findByLogin(login) != null) {
             model.addAttribute("erro", "O login já existe. Escolha outro nome de usuário.");
             return "register";
         }
 
         Usuario usuario = new Usuario(nome, login, senha, "USER");
-        usuarioDAO.insert(usuario);
+        usuarioRepository.save(usuario);
         model.addAttribute("mensagem", "Conta criada com sucesso. Faça login abaixo.");
         return "login";
     }
@@ -103,7 +107,7 @@ public class UsuarioController {
         String login = request.getParameter("login");
         String senha = request.getParameter("senha");
 
-        Usuario usuario = usuarioDAO.authenticate(login, senha);
+        Usuario usuario = usuarioRepository.findByLoginAndSenha(login, senha);
         if (usuario == null) {
             model.addAttribute("erro", "Login ou senha incorretos.");
             return "login";
@@ -132,32 +136,32 @@ public class UsuarioController {
             return "usuario-form";
         }
 
+        Usuario usuarioSalvo;
         if (idParam == null || idParam.isBlank()) {
             if (senha == null || senha.isBlank()) {
                 model.addAttribute("erro", "Senha é obrigatória para novo usuário.");
                 return "usuario-form";
             }
-            if (usuarioDAO.getByLogin(login) != null) {
+            if (usuarioRepository.findByLogin(login) != null) {
                 model.addAttribute("erro", "O login já existe. Escolha outro nome de usuário.");
                 return "usuario-form";
             }
-            Usuario novo = new Usuario(nome, login, senha, papel);
-            usuarioDAO.insert(novo);
+            usuarioSalvo = new Usuario(nome, login, senha, papel);
         } else {
             Long id = Long.parseLong(idParam);
-            Usuario existente = usuarioDAO.get(id);
-            if (existente == null) {
+            usuarioSalvo = usuarioRepository.findById(id).orElse(null);
+            if (usuarioSalvo == null) {
                 return "redirect:/usuario/lista";
             }
             if (senha == null || senha.isBlank()) {
-                senha = existente.getSenha();
+                senha = usuarioSalvo.getSenha();
             }
-            existente.setNome(nome);
-            existente.setLogin(login);
-            existente.setSenha(senha);
-            existente.setPapel(papel);
-            usuarioDAO.update(existente);
+            usuarioSalvo.setNome(nome);
+            usuarioSalvo.setLogin(login);
+            usuarioSalvo.setSenha(senha);
+            usuarioSalvo.setPapel(papel);
         }
+        usuarioRepository.save(usuarioSalvo);
         return "redirect:/usuario/lista";
     }
 

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import br.ufscar.dc.dsw.dao.PetDAO;
+import br.ufscar.dc.dsw.dao.PetRepository;
 import br.ufscar.dc.dsw.domain.Pet;
 import br.ufscar.dc.dsw.domain.Usuario;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,13 +18,17 @@ import jakarta.servlet.http.HttpSession;
 @RequestMapping("/pets")
 public class PetController {
 
-    private final PetDAO petDAO = new PetDAO();
+    private final PetRepository petRepository;
+
+    public PetController(PetRepository petRepository) {
+        this.petRepository = petRepository;
+    }
 
     @GetMapping
     public String listar(HttpServletRequest request, Model model) {
         Usuario usuario = getUsuarioLogado(request);
         Pet petLogado = getPetLogado(request);
-        List<Pet> lista = petDAO.getAll();
+        List<Pet> lista = petRepository.findAll();
         model.addAttribute("pets", lista);
         model.addAttribute("petLogado", petLogado);
         model.addAttribute("usuarioLogado", usuario);
@@ -39,10 +43,11 @@ public class PetController {
     @GetMapping("/edicao")
     public String editar(HttpServletRequest request, Model model) {
         Long id = Long.parseLong(request.getParameter("id"));
-        Pet pet = petDAO.get(id);
+        Pet pet = petRepository.findById(id).orElse(null);
         Usuario usuario = getUsuarioLogado(request);
         Pet petLogado = getPetLogado(request);
-        if (pet == null || (usuario == null || !"ADMIN".equals(usuario.getPapel())) && (petLogado == null || !petLogado.getId().equals(pet.getId()))) {
+        if (pet == null || (usuario == null || !"ADMIN".equals(usuario.getPapel()))
+                && (petLogado == null || !petLogado.getId().equals(pet.getId()))) {
             return "redirect:/pets";
         }
         model.addAttribute("pet", pet);
@@ -54,14 +59,14 @@ public class PetController {
     @GetMapping("/excluir")
     public String excluir(HttpServletRequest request) {
         Long id = Long.parseLong(request.getParameter("id"));
-        Pet pet = petDAO.get(id);
+        Pet pet = petRepository.findById(id).orElse(null);
         Usuario usuario = getUsuarioLogado(request);
         Pet petLogado = getPetLogado(request);
         if (pet == null || ((usuario == null || !"ADMIN".equals(usuario.getPapel()))
                 && (petLogado == null || !petLogado.getId().equals(pet.getId())))) {
             return "redirect:/pets";
         }
-        petDAO.delete(pet);
+        petRepository.delete(pet);
         if (petLogado != null && petLogado.getId().equals(pet.getId())) {
             HttpSession session = request.getSession(false);
             if (session != null) {
@@ -97,19 +102,27 @@ public class PetController {
 
         Boolean castrado = castradoParam != null;
 
+        Pet pet;
         if (idParam == null || idParam.isBlank()) {
-            Pet pet = new Pet(nome, raca, idade, porte, castrado, descricao);
-            petDAO.insert(pet);
+            pet = new Pet(nome, raca, idade, porte, castrado, descricao);
+        } else {
+            Long id = Long.parseLong(idParam);
+            pet = petRepository.findById(id).orElse(null);
+            if (pet == null) {
+                return "redirect:/pets";
+            }
+            pet.setNome(nome);
+            pet.setRaca(raca);
+            pet.setIdade(idade);
+            pet.setPorte(porte);
+            pet.setCastrado(castrado);
+            pet.setDescricao(descricao);
+        }
+        pet = petRepository.save(pet);
+        if (idParam == null || idParam.isBlank()) {
             HttpSession session = request.getSession();
             session.setAttribute("petLogado", pet);
         } else {
-            Long id = Long.parseLong(idParam);
-            Pet existing = petDAO.get(id);
-            if (existing == null) {
-                return "redirect:/pets";
-            }
-            Pet pet = new Pet(id, nome, raca, idade, porte, castrado, descricao);
-            petDAO.update(pet);
             HttpSession session = request.getSession(false);
             if (session != null) {
                 Pet petLogado = (Pet) session.getAttribute("petLogado");
@@ -124,7 +137,7 @@ public class PetController {
     @GetMapping("/selecionar")
     public String selecionar(HttpServletRequest request) {
         Long id = Long.parseLong(request.getParameter("id"));
-        Pet pet = petDAO.get(id);
+        Pet pet = petRepository.findById(id).orElse(null);
         if (pet != null) {
             HttpSession session = request.getSession();
             session.setAttribute("petLogado", pet);

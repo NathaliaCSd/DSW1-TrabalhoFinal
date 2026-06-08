@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import br.ufscar.dc.dsw.dao.CasaDAO;
+import br.ufscar.dc.dsw.dao.CasaRepository;
 import br.ufscar.dc.dsw.domain.Casa;
 import br.ufscar.dc.dsw.domain.Pet;
 import br.ufscar.dc.dsw.domain.Usuario;
@@ -19,13 +19,17 @@ import jakarta.servlet.http.HttpSession;
 @RequestMapping("/casas")
 public class CasaController {
 
-    private final CasaDAO casaDAO = new CasaDAO();
+    private final CasaRepository casaRepository;
+
+    public CasaController(CasaRepository casaRepository) {
+        this.casaRepository = casaRepository;
+    }
 
     @GetMapping
     public String listar(HttpServletRequest request, Model model) {
         Usuario usuario = getUsuarioLogado(request);
         Pet pet = getPetLogado(request);
-        List<Casa> lista = casaDAO.getAll();
+        List<Casa> lista = casaRepository.findAll();
         model.addAttribute("casas", lista);
         model.addAttribute("usuarioLogado", usuario);
         model.addAttribute("petLogado", pet);
@@ -48,7 +52,7 @@ public class CasaController {
             return "redirect:/casas";
         }
         Long id = Long.parseLong(request.getParameter("id"));
-        Casa casa = casaDAO.get(id);
+        Casa casa = casaRepository.findById(id).orElse(null);
         model.addAttribute("casa", casa);
         return "casa-form";
     }
@@ -60,7 +64,7 @@ public class CasaController {
             return "redirect:/casas";
         }
         Long id = Long.parseLong(request.getParameter("id"));
-        casaDAO.delete(new Casa(id));
+        casaRepository.deleteById(id);
         return "redirect:/casas";
     }
 
@@ -87,14 +91,18 @@ public class CasaController {
             return "casa-form";
         }
 
-        if (idParam == null || idParam.isBlank()) {
-            Casa casa = new Casa(nome, endereco, descricao, diaria, capacidade);
-            casaDAO.insert(casa);
-        } else {
+        Casa casa = new Casa();
+        if (idParam != null && !idParam.isBlank()) {
             Long id = Long.parseLong(idParam);
-            Casa casa = new Casa(id, nome, endereco, descricao, diaria, capacidade);
-            casaDAO.update(casa);
+            casa = casaRepository.findById(id).orElse(new Casa());
+            casa.setId(id);
         }
+        casa.setNome(nome);
+        casa.setEndereco(endereco);
+        casa.setDescricao(descricao);
+        casa.setDiaria(diaria);
+        casa.setCapacidade(capacidade);
+        casaRepository.save(casa);
         return "redirect:/casas";
     }
 
