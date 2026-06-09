@@ -1,6 +1,7 @@
 /home/nati/Documentos/codes/DSW1/PetBnB/src/main/java/br/ufscar/dc/dsw/Application.java
 /home/nati/Documentos/codes/DSW1/PetBnB/src/main/java/br/ufscar/dc/dsw/controller/CasaController.java
 /home/nati/Documentos/codes/DSW1/PetBnB/src/main/java/br/ufscar/dc/dsw/controller/CustomErrorController.java
+/home/nati/Documentos/codes/DSW1/PetBnB/src/main/java/br/ufscar/dc/dsw/controller/HomeController.java
 /home/nati/Documentos/codes/DSW1/PetBnB/src/main/java/br/ufscar/dc/dsw/controller/PetController.java
 /home/nati/Documentos/codes/DSW1/PetBnB/src/main/java/br/ufscar/dc/dsw/controller/ReservaController.java
 /home/nati/Documentos/codes/DSW1/PetBnB/src/main/java/br/ufscar/dc/dsw/controller/UsuarioController.java

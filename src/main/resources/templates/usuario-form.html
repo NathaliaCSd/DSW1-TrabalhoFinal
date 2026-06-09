@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title th:text="${usuario != null} ? #{user.form.title.edit} : #{user.form.title.create}">Usuário</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1 th:text="${usuario != null} ? #{user.form.title.edit} : #{user.form.title.create}"></h1>
+    </header>
+
+    <div class="alert alert-error" th:if="${erro != null}" th:text="${erro}"></div>
+
+    <form th:action="@{/usuario/salvar}" method="post" class="form">
+        <input type="hidden" name="id" th:if="${usuario != null}" th:value="${usuario.id}" />
+
+        <label th:text="#{user.form.name}"></label>
+        <input type="text" name="nome" th:value="${usuario.nome}" required />
+
+        <label th:text="#{user.form.login}"></label>
+        <input type="text" name="login" th:value="${usuario.login}" required />
+
+        <label th:text="#{user.form.password}"></label>
+        <input type="password" name="senha" th:attr="${usuario != null} ? '' : 'required'" />
+
+        <label th:text="#{user.form.role}"></label>
+        <select name="papel" required>
+            <option value="USER" th:selected="${usuario != null and usuario.papel == 'USER'}">[[#{user.form.role.user}]]</option>
+            <option value="ADMIN" th:selected="${usuario != null and usuario.papel == 'ADMIN'}">[[#{user.form.role.admin}]]</option>
+        </select>
+
+        <button type="submit" th:text="#{button.save}">Salvar</button>
+    </form>
+    <p><a th:href="@{/usuario/lista}" th:text="#{button.back}">Voltar</a></p>
+</div>
+</body>
+</html>

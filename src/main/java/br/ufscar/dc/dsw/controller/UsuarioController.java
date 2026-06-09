@@ -28,20 +28,25 @@ public class UsuarioController {
         return "register";
     }
 
+    @GetMapping("/login")
+    public String loginPage() {
+        return "login";
+    }
+
     @GetMapping("/logout")
     public String logout(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.invalidate();
         }
-        return "redirect:/index.jsp";
+        return "redirect:/";
     }
 
     @GetMapping("/lista")
     public String listar(HttpServletRequest request, Model model) {
         Usuario usuario = getUsuarioLogado(request);
         if (usuario == null || !"ADMIN".equals(usuario.getPapel())) {
-            return "redirect:/index.jsp";
+            return "redirect:/";
         }
         List<Usuario> lista = usuarioRepository.findAll();
         model.addAttribute("usuarios", lista);
@@ -52,7 +57,7 @@ public class UsuarioController {
     public String solicitarFormulario(HttpServletRequest request) {
         Usuario usuario = getUsuarioLogado(request);
         if (usuario == null || !"ADMIN".equals(usuario.getPapel())) {
-            return "redirect:/index.jsp";
+            return "redirect:/";
         }
         return "usuario-form";
     }
@@ -61,7 +66,7 @@ public class UsuarioController {
     public String editar(HttpServletRequest request, Model model) {
         Usuario usuario = getUsuarioLogado(request);
         if (usuario == null || !"ADMIN".equals(usuario.getPapel())) {
-            return "redirect:/index.jsp";
+            return "redirect:/";
         }
         Long id = Long.parseLong(request.getParameter("id"));
         Usuario usuarioEdicao = usuarioRepository.findById(id).orElse(null);
@@ -73,7 +78,7 @@ public class UsuarioController {
     public String excluir(HttpServletRequest request) {
         Usuario usuario = getUsuarioLogado(request);
         if (usuario == null || !"ADMIN".equals(usuario.getPapel())) {
-            return "redirect:/index.jsp";
+            return "redirect:/";
         }
         Long id = Long.parseLong(request.getParameter("id"));
         usuarioRepository.deleteById(id);
@@ -122,7 +127,7 @@ public class UsuarioController {
     public String salvar(HttpServletRequest request, Model model) {
         Usuario usuario = getUsuarioLogado(request);
         if (usuario == null || !"ADMIN".equals(usuario.getPapel())) {
-            return "redirect:/index.jsp";
+            return "redirect:/";
         }
 
         String idParam = request.getParameter("id");

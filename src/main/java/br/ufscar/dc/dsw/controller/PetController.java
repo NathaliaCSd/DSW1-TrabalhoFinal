@@ -85,6 +85,10 @@ public class PetController {
         String porte = request.getParameter("porte");
         String castradoParam = request.getParameter("castrado");
         String descricao = request.getParameter("descricao");
+        Usuario usuario = getUsuarioLogado(request);
+        if (usuario == null) {
+            return "redirect:/usuario/login";
+        }
 
         if (nome == null || raca == null || idadeParam == null || porte == null || nome.isBlank() || raca.isBlank()
                 || idadeParam.isBlank() || porte.isBlank()) {
@@ -105,6 +109,7 @@ public class PetController {
         Pet pet;
         if (idParam == null || idParam.isBlank()) {
             pet = new Pet(nome, raca, idade, porte, castrado, descricao);
+            pet.setDono(usuario);
         } else {
             Long id = Long.parseLong(idParam);
             pet = petRepository.findById(id).orElse(null);
@@ -117,6 +122,9 @@ public class PetController {
             pet.setPorte(porte);
             pet.setCastrado(castrado);
             pet.setDescricao(descricao);
+            if (pet.getDono() == null) {
+                pet.setDono(usuario);
+            }
         }
         pet = petRepository.save(pet);
         if (idParam == null || idParam.isBlank()) {

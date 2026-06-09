@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title th:text="#{houses.title} + ' | ' + #{app.title}">Casas</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <link rel="stylesheet" th:href="@{/css/responsive.css}" />
+</head>
+<body class="main-layout">
+<div class="container mt-5">
+    <header class="mb-4">
+        <h1 th:text="#{houses.title}">Casas</h1>
+        <p th:text="#{houses.subtitle}">Subtitulo</p>
+    </header>
+
+    <div class="btn-group mb-4" role="group">
+        <a class="btn btn-secondary" th:href="@{/}">[[#{topnav.home}]]</a>
+        <a class="btn btn-secondary" th:href="@{/pets}">[[#{button.view_pets}]]</a>
+        <a class="btn btn-primary" th:if="${session.petLogado != null}" th:href="@{/reservas}">[[#{button.my_reservations}]]</a>
+        <a class="btn btn-warning" th:if="${session.petLogado != null}" th:href="@{/pets/sair}">[[#{button.logout_pet}]]</a>
+        <a class="btn btn-danger" th:if="${session.usuarioLogado != null}" th:href="@{/usuario/logout}">[[#{button.logout}]]</a>
+    </div>
+
+    <div class="alert alert-info" th:if="${session.petLogado != null}">
+        <strong th:text="#{label.selected_pet}"></strong> <span th:text="${session.petLogado.nome}"></span>
+    </div>
+
+    <div class="alert alert-info" th:if="${casas == null or #lists.isEmpty(casas)}">
+        <span th:text="#{no.houses}"></span>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4" th:each="casa : ${casas}">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h4 th:text="${casa.nome}"></h4>
+                    <p><strong th:text="#{label.address}"></strong> <span th:text="${casa.endereco}"></span></p>
+                    <p th:text="${casa.descricao}"></p>
+                    <p><strong th:text="#{label.daily}"></strong> R$ <span th:text="${casa.diaria}"></span></p>
+                    <p><strong th:text="#{label.capacity}"></strong> <span th:text="${casa.capacidade}"></span></p>
+                    <div class="mt-3">
+                        <a class="btn btn-primary" th:if="${session.petLogado != null}" th:href="@{/reservas/novo(casaId=${casa.id})}">[[#{button.reserve}]]</a>
+                        <a class="btn btn-outline-primary" th:if="${session.petLogado == null}" th:href="@{/pets}">[[#{button.select_pet}]]</a>
+                    </div>
+                    <div class="mt-3" th:if="${session.usuarioLogado != null and session.usuarioLogado.papel == 'ADMIN'}">
+                        <a class="btn btn-secondary" th:href="@{/casas/edicao(id=${casa.id})}">[[#{button.edit}]]</a>
+                        <a class="btn btn-danger" th:href="@{/casas/excluir(id=${casa.id})}" th:onclick="|return confirm('${#{confirm.delete}}');|">[[#{button.delete}]]</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/jquery.min.js}"></script>
+<script th:src="@{/js/bootstrap.min.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

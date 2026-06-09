@@ -1,7 +1,15 @@
-br/ufscar/dc/dsw/domain/Usuario.class
+br/ufscar/dc/dsw/dao/ReservaRepository.class
+br/ufscar/dc/dsw/dao/UsuarioRepository.class
 br/ufscar/dc/dsw/Application.class
-br/ufscar/dc/dsw/controller/PetController.class
+br/ufscar/dc/dsw/controller/HomeController.class
 br/ufscar/dc/dsw/controller/UsuarioController.class
+br/ufscar/dc/dsw/dao/CasaRepository.class
+br/ufscar/dc/dsw/dao/PetRepository.class
+br/ufscar/dc/dsw/domain/Usuario.class
+br/ufscar/dc/dsw/controller/PetController.class
+br/ufscar/dc/dsw/controller/CustomErrorController.class
+br/ufscar/dc/dsw/domain/Reserva.class
 br/ufscar/dc/dsw/controller/CasaController.class
 br/ufscar/dc/dsw/domain/Pet.class
 br/ufscar/dc/dsw/domain/Casa.class
+br/ufscar/dc/dsw/controller/ReservaController.class

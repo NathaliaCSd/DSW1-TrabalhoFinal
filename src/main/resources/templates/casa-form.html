@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title th:text="${casa != null} ? #{house.form.title.edit} : #{house.form.title.create}">Casa Form</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1 th:text="${casa != null} ? #{house.form.title.edit} : #{house.form.title.create}">Formulário Casa</h1>
+    </header>
+
+    <form th:action="@{/casas/salvar}" method="post" class="form">
+        <input type="hidden" name="id" th:if="${casa != null}" th:value="${casa.id}" />
+        <label th:text="#{house.form.name}">Nome</label>
+        <input type="text" name="nome" th:value="${casa.nome}" required />
+
+        <label th:text="#{house.form.address}">Endereço</label>
+        <input type="text" name="endereco" th:value="${casa.endereco}" required />
+
+        <label th:text="#{house.form.description}">Descrição</label>
+        <textarea name="descricao" rows="4" th:text="${casa.descricao}"></textarea>
+
+        <label th:text="#{house.form.daily}">Diária</label>
+        <input type="number" name="diaria" step="0.01" th:value="${casa.diaria}" required />
+
+        <label th:text="#{house.form.capacity}">Capacidade</label>
+        <input type="number" name="capacidade" th:value="${casa.capacidade}" required />
+
+        <button type="submit" th:text="#{button.save}">Salvar</button>
+    </form>
+    <p><a th:href="@{/casas}" th:text="#{button.back}">Voltar para lista</a></p>
+</div>
+</body>
+</html>

@@ -1,10 +1,14 @@
 package br.ufscar.dc.dsw.domain;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -26,6 +30,12 @@ public class Usuario {
 
     @Column(length = 10)
     private String papel;
+
+    @OneToMany(mappedBy = "dono")
+    private List<Pet> pets = new ArrayList<>();
+
+    @OneToMany(mappedBy = "usuario")
+    private List<Casa> casas = new ArrayList<>();
 
     public Usuario() {
     }
@@ -87,5 +97,21 @@ public class Usuario {
 
     public void setPapel(String papel) {
         this.papel = papel;
+    }
+
+    public List<Pet> getPets() {
+        return pets;
+    }
+
+    public void setPets(List<Pet> pets) {
+        this.pets = pets;
+    }
+
+    public List<Casa> getCasas() {
+        return casas;
+    }
+
+    public void setCasas(List<Casa> casas) {
+        this.casas = casas;
     }
 }

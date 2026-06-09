@@ -5,6 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -32,6 +34,10 @@ public class Pet {
 
     @Column(length = 512)
     private String descricao;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "dono_id", nullable = false)
+    private Usuario dono;
 
     public Pet() {
     }
@@ -108,5 +114,13 @@ public class Pet {
 
     public void setDescricao(String descricao) {
         this.descricao = descricao;
+    }
+
+    public Usuario getDono() {
+        return dono;
+    }
+
+    public void setDono(Usuario dono) {
+        this.dono = dono;
     }
 }

@@ -102,6 +102,9 @@ public class CasaController {
         casa.setDescricao(descricao);
         casa.setDiaria(diaria);
         casa.setCapacidade(capacidade);
+        if (casa.getUsuario() == null) {
+            casa.setUsuario(usuario);
+        }
         casaRepository.save(casa);
         return "redirect:/casas";
     }

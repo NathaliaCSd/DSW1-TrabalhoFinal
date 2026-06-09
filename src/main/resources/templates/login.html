@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title th:text="#{login.title} + ' | ' + #{app.title}">Login | PetBnB</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="css/style.css" />
+    <link rel="stylesheet" th:href="@{/css/responsive.css}" href="css/responsive.css" />
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1 th:text="#{login.title}">Login</h1>
+        <p th:text="#{login.subtitle}">Faça login</p>
+        <div class="lang-selector">
+            <strong th:text="#{lang.select}">Idioma:</strong>
+            <a th:href="@{?lang=pt_BR}" th:text="#{lang.portuguese}">Português</a> |
+            <a th:href="@{?lang=en}" th:text="#{lang.english}">Inglês</a>
+        </div>
+    </header>
+
+    <div th:if="${erro != null}" class="alert alert-error" th:text="${erro}"></div>
+    <div th:if="${mensagem != null}" class="alert alert-success" th:text="${mensagem}"></div>
+
+    <form th:action="@{/usuario/login}" method="post" class="form">
+        <div class="form-group">
+            <label th:text="#{label.login}">Login</label>
+            <input class="form-control" type="text" name="login" required />
+        </div>
+        <div class="form-group">
+            <label th:text="#{label.password}">Senha</label>
+            <input class="form-control" type="password" name="senha" required />
+        </div>
+        <button class="btn btn-primary" type="submit" th:text="#{button.login}">Entrar</button>
+    </form>
+    <p class="center" th:utext="#{login.no_account} + ' ' + '<a href="' + @{/usuario/cadastro} + '">' + #{button.register} + '</a>'">Ainda não tem conta? Registre-se</p>
+</div>
+<script th:src="@{/js/jquery.min.js}" src="js/jquery.min.js"></script>
+<script th:src="@{/js/bootstrap.min.js}" src="js/bootstrap.min.js"></script>
+</body>
+</html>

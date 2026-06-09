@@ -40,10 +40,14 @@ public class Application extends SpringBootServletInitializer {
                 usuarioRepository.save(admin);
                 usuarioRepository.save(user);
             }
+            Usuario admin = usuarioRepository.findByLogin("admin");
+            Usuario user = usuarioRepository.findByLogin("user");
 
             if (casaRepository.count() == 0) {
                 Casa casa1 = new Casa("Casa do Luar", "Rua das Flores, 123", "Ambiente acolhedor para cães de pequeno e médio porte.", 120.00f, 3);
                 Casa casa2 = new Casa("Refúgio Pet Feliz", "Av. dos Pinheiros, 45", "Casa ampla com quintal seguro para passeios diários.", 180.00f, 5);
+                casa1.setUsuario(admin);
+                casa2.setUsuario(admin);
                 casaRepository.save(casa1);
                 casaRepository.save(casa2);
             }
@@ -51,6 +55,8 @@ public class Application extends SpringBootServletInitializer {
             if (petRepository.count() == 0) {
                 Pet pet1 = new Pet("Luna", "Shih Tzu", 4, "Pequeno", true, "Adora carinho e tem energia tranquila.");
                 Pet pet2 = new Pet("Bongo", "Labrador", 3, "Grande", false, "Muito amigável e gosta de brincar com crianças.");
+                pet1.setDono(user);
+                pet2.setDono(user);
                 petRepository.save(pet1);
                 petRepository.save(pet2);
             }
