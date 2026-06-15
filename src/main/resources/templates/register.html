@@ -32,7 +32,10 @@
         </div>
         <button class="btn btn-primary" type="submit" th:text="#{button.create_account}">Criar conta</button>
     </form>
-    <p class="center" th:utext="#{register.already_account} + ' ' + '<a href="' + @{/usuario/login} + '">' + #{button.login} + '</a>'"></p>
+    <p class="center">
+    <span th:text="#{register.already_account}">Já tem conta?</span>
+    <a th:href="@{/usuario/login}" th:text="#{button.login}">Entrar</a>
+</p>
 </div>
 </body>
 </html>

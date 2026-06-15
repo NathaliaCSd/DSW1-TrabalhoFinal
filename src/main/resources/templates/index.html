@@ -61,6 +61,7 @@
             <div th:if="${session.usuarioLogado != null}">
                 <h2 th:text="'Olá, ' + ${session.usuarioLogado.nome}">Olá, Usuário</h2>
                 <p>Gerencie casas, pets e reservas como administrador.</p>
+                <a class="button" th:href="@{/usuario/perfil}">Meu Perfil</a>
                 <a class="button" th:href="@{/casas}">Ver Casas</a>
                 <a class="button" th:href="@{/pets}">Ver Pets</a>
                 <a class="button" th:if="${session.usuarioLogado.papel == 'ADMIN'}" th:href="@{/usuario/lista}">Gerenciar Usuários</a>

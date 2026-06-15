@@ -34,7 +34,10 @@
         </div>
         <button class="btn btn-primary" type="submit" th:text="#{button.login}">Entrar</button>
     </form>
-    <p class="center" th:utext="#{login.no_account} + ' ' + '<a href="' + @{/usuario/cadastro} + '">' + #{button.register} + '</a>'">Ainda não tem conta? Registre-se</p>
+    <p class="center">
+    <span th:text="#{login.no_account}">Ainda não tem conta?</span>
+    <a th:href="@{/usuario/cadastro}" th:text="#{button.register}">Registre-se</a>
+</p>
 </div>
 <script th:src="@{/js/jquery.min.js}" src="js/jquery.min.js"></script>
 <script th:src="@{/js/bootstrap.min.js}" src="js/bootstrap.min.js"></script>

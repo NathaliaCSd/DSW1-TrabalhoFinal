@@ -33,6 +33,17 @@ public class UsuarioController {
         return "login";
     }
 
+    @GetMapping("/perfil")
+    public String perfil(HttpServletRequest request, Model model) {
+        Usuario usuario = getUsuarioLogado(request);
+        if (usuario == null) {
+            return "redirect:/usuario/login";
+        }
+        Usuario usuarioAtualizado = usuarioRepository.findById(usuario.getId()).orElse(usuario);
+        model.addAttribute("usuario", usuarioAtualizado);
+        return "usuario-form";
+    }
+
     @GetMapping("/logout")
     public String logout(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
@@ -126,8 +137,8 @@ public class UsuarioController {
     @PostMapping("/salvar")
     public String salvar(HttpServletRequest request, Model model) {
         Usuario usuario = getUsuarioLogado(request);
-        if (usuario == null || !"ADMIN".equals(usuario.getPapel())) {
-            return "redirect:/";
+        if (usuario == null) {
+            return "redirect:/usuario/login";
         }
 
         String idParam = request.getParameter("id");
@@ -136,19 +147,26 @@ public class UsuarioController {
         String senha = request.getParameter("senha");
         String papel = request.getParameter("papel");
 
-        if (nome == null || login == null || papel == null || nome.isBlank() || login.isBlank() || papel.isBlank()) {
+        if (nome == null || login == null || nome.isBlank() || login.isBlank()) {
             model.addAttribute("erro", "Preencha todos os campos obrigatórios.");
             return "usuario-form";
         }
 
         Usuario usuarioSalvo;
         if (idParam == null || idParam.isBlank()) {
+            if (!"ADMIN".equals(usuario.getPapel())) {
+                return "redirect:/";
+            }
             if (senha == null || senha.isBlank()) {
                 model.addAttribute("erro", "Senha é obrigatória para novo usuário.");
                 return "usuario-form";
             }
             if (usuarioRepository.findByLogin(login) != null) {
                 model.addAttribute("erro", "O login já existe. Escolha outro nome de usuário.");
+                return "usuario-form";
+            }
+            if (papel == null || papel.isBlank()) {
+                model.addAttribute("erro", "Preencha todos os campos obrigatórios.");
                 return "usuario-form";
             }
             usuarioSalvo = new Usuario(nome, login, senha, papel);
@@ -158,15 +176,32 @@ public class UsuarioController {
             if (usuarioSalvo == null) {
                 return "redirect:/usuario/lista";
             }
+            boolean isOwnProfile = usuarioSalvo.getId().equals(usuario.getId());
+            if (!"ADMIN".equals(usuario.getPapel()) && !isOwnProfile) {
+                return "redirect:/";
+            }
             if (senha == null || senha.isBlank()) {
                 senha = usuarioSalvo.getSenha();
+            }
+            Usuario existing = usuarioRepository.findByLogin(login);
+            if (existing != null && !existing.getId().equals(usuarioSalvo.getId())) {
+                model.addAttribute("erro", "O login já existe. Escolha outro nome de usuário.");
+                return "usuario-form";
             }
             usuarioSalvo.setNome(nome);
             usuarioSalvo.setLogin(login);
             usuarioSalvo.setSenha(senha);
-            usuarioSalvo.setPapel(papel);
+            if (papel != null && !papel.isBlank() && "ADMIN" .equals(usuario.getPapel())) {
+                usuarioSalvo.setPapel(papel);
+            }
         }
         usuarioRepository.save(usuarioSalvo);
+        if (usuarioSalvo.getId().equals(usuario.getId())) {
+            HttpSession session = request.getSession(false);
+            if (session != null) {
+                session.setAttribute("usuarioLogado", usuarioSalvo);
+            }
+        }
         return "redirect:/usuario/lista";
     }
 

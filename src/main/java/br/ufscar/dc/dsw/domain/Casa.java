@@ -9,7 +9,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-@Entity
+@Entity // Indica à JPA que esta classe é uma entidade persistente.
 @Table(name = "Casa")
 public class Casa {
 

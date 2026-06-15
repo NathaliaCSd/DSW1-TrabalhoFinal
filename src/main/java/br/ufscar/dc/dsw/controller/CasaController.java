@@ -15,11 +15,11 @@ import br.ufscar.dc.dsw.domain.Usuario;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
-@Controller
+@Controller // Controlador Spring MVC que atende URLs com prefixo /casas.
 @RequestMapping("/casas")
 public class CasaController {
 
-    private final CasaRepository casaRepository;
+    private final CasaRepository casaRepository; // Repositório JPA injetado pelo Spring.
 
     public CasaController(CasaRepository casaRepository) {
         this.casaRepository = casaRepository;
@@ -27,6 +27,7 @@ public class CasaController {
 
     @GetMapping
     public String listar(HttpServletRequest request, Model model) {
+        // Recebe os dados de sessão e consulta todas as casas no banco.
         Usuario usuario = getUsuarioLogado(request);
         Pet pet = getPetLogado(request);
         List<Casa> lista = casaRepository.findAll();
@@ -70,6 +71,7 @@ public class CasaController {
 
     @PostMapping("/salvar")
     public String salvar(HttpServletRequest request, Model model) {
+        // Recebe o POST do formulário Thymeleaf e salva/atualiza a entidade Casa no banco.
         Usuario usuario = getUsuarioLogado(request);
         if (usuario == null || !"ADMIN".equals(usuario.getPapel())) {
             return "redirect:/casas";

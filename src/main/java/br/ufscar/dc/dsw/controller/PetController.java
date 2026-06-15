@@ -28,7 +28,12 @@ public class PetController {
     public String listar(HttpServletRequest request, Model model) {
         Usuario usuario = getUsuarioLogado(request);
         Pet petLogado = getPetLogado(request);
-        List<Pet> lista = petRepository.findAll();
+        List<Pet> lista;
+        if (usuario != null && !"ADMIN".equals(usuario.getPapel())) {
+            lista = petRepository.findByDono(usuario);
+        } else {
+            lista = petRepository.findAll();
+        }
         model.addAttribute("pets", lista);
         model.addAttribute("petLogado", petLogado);
         model.addAttribute("usuarioLogado", usuario);
@@ -36,7 +41,8 @@ public class PetController {
     }
 
     @GetMapping("/novo")
-    public String solicitarFormulario(HttpServletRequest request) {
+    public String solicitarFormulario(HttpServletRequest request, Model model) {
+        model.addAttribute("pet", new Pet());
         return "pet-form";
     }
 

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<!-- Thymeleaf template para listar casas. O controller adiciona um atributo "casas" ao modelo e retorna este nome de view. -->
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -46,7 +47,7 @@
                     </div>
                     <div class="mt-3" th:if="${session.usuarioLogado != null and session.usuarioLogado.papel == 'ADMIN'}">
                         <a class="btn btn-secondary" th:href="@{/casas/edicao(id=${casa.id})}">[[#{button.edit}]]</a>
-                        <a class="btn btn-danger" th:href="@{/casas/excluir(id=${casa.id})}" th:onclick="|return confirm('${#{confirm.delete}}');|">[[#{button.delete}]]</a>
+                        <a class="btn btn-danger" th:href="@{/casas/excluir(id=${casa.id})}" th:onclick="|return confirm('#{confirm.delete}');|">[[#{button.delete}]]</a>
                     </div>
                 </div>
             </div>

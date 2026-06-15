@@ -47,7 +47,7 @@
                         <button type="button" class="btn btn-success" disabled th:if="${session.petLogado != null and session.petLogado.id == pet.id}">[[#{button.selected}]]</button>
                         <a class="btn btn-outline-primary" th:if="${not (session.petLogado != null and session.petLogado.id == pet.id)}" th:href="@{/pets/selecionar(id=${pet.id})}">[[#{button.select_pet}]]</a>
                         <a class="btn btn-secondary" th:if="${(session.usuarioLogado != null and session.usuarioLogado.papel == 'ADMIN') or (session.petLogado != null and session.petLogado.id == pet.id)}" th:href="@{/pets/edicao(id=${pet.id})}">[[#{button.edit}]]</a>
-                        <a class="btn btn-danger" th:if="${(session.usuarioLogado != null and session.usuarioLogado.papel == 'ADMIN') or (session.petLogado != null and session.petLogado.id == pet.id)}" th:href="@{/pets/excluir(id=${pet.id})}" th:onclick="|return confirm('${#{confirm.delete}}');|">[[#{button.delete}]]</a>
+                        <a class="btn btn-danger" th:if="${(session.usuarioLogado != null and session.usuarioLogado.papel == 'ADMIN') or (session.petLogado != null and session.petLogado.id == pet.id)}" th:href="@{/pets/excluir(id=${pet.id})}" th:onclick="|return confirm('#{confirm.delete}');|">[[#{button.delete}]]</a>
                     </div>
                 </div>
             </div>

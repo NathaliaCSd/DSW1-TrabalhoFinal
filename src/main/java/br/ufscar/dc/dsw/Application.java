@@ -18,7 +18,7 @@ import br.ufscar.dc.dsw.domain.Pet;
 import br.ufscar.dc.dsw.domain.Reserva;
 import br.ufscar.dc.dsw.domain.Usuario;
 
-@SpringBootApplication
+@SpringBootApplication // Marca a aplicação Spring Boot e habilita auto-configuração e varredura de componentes.
 public class Application extends SpringBootServletInitializer {
 
     @Override
@@ -30,6 +30,7 @@ public class Application extends SpringBootServletInitializer {
         SpringApplication.run(Application.class, args);
     }
 
+    // Bean que inicializa dados no banco usando Spring Data JPA quando a aplicação sobe.
     @Bean
     public CommandLineRunner dataInitializer(UsuarioRepository usuarioRepository, CasaRepository casaRepository,
             PetRepository petRepository, ReservaRepository reservaRepository) {
