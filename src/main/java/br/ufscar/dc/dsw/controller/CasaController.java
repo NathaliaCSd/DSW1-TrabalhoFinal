@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import br.ufscar.dc.dsw.dao.CasaRepository;
+import br.ufscar.dc.dsw.dao.ReservaRepository;
 import br.ufscar.dc.dsw.domain.Casa;
 import br.ufscar.dc.dsw.domain.Pet;
 import br.ufscar.dc.dsw.domain.Usuario;
@@ -20,9 +21,11 @@ import jakarta.servlet.http.HttpSession;
 public class CasaController {
 
     private final CasaRepository casaRepository; // Repositório JPA injetado pelo Spring.
+    private final ReservaRepository reservaRepository;
 
-    public CasaController(CasaRepository casaRepository) {
+    public CasaController(CasaRepository casaRepository, ReservaRepository reservaRepository) {
         this.casaRepository = casaRepository;
+        this.reservaRepository = reservaRepository;
     }
 
     @GetMapping
@@ -65,6 +68,7 @@ public class CasaController {
             return "redirect:/casas";
         }
         Long id = Long.parseLong(request.getParameter("id"));
+        reservaRepository.deleteByCasaId(id);
         casaRepository.deleteById(id);
         return "redirect:/casas";
     }

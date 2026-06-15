@@ -35,9 +35,14 @@ public class ReservaController {
     public String listar(HttpServletRequest request, Model model) {
         Usuario usuario = getUsuarioLogado(request);
         Pet pet = getPetLogado(request);
-        List<Reserva> lista = (usuario != null && "ADMIN".equals(usuario.getPapel()))
-                ? reservaRepository.findAll()
-                : pet != null ? reservaRepository.findByPetId(pet.getId()) : null;
+        List<Reserva> lista;
+        if (usuario != null && "ADMIN".equals(usuario.getPapel())) {
+            lista = reservaRepository.findAll();
+        } else if (pet != null) {
+            lista = reservaRepository.findByPetId(pet.getId());
+        } else {
+            lista = List.of(); // lista vazia, não null
+        }
         model.addAttribute("reservas", lista);
         model.addAttribute("petLogado", pet);
         model.addAttribute("usuarioLogado", usuario);
@@ -73,6 +78,8 @@ public class ReservaController {
         if (casaIdParam == null || dataInicioParam == null || dataFimParam == null
                 || dataInicioParam.isBlank() || dataFimParam.isBlank()) {
             model.addAttribute("erro", "Preencha todos os dados da reserva.");
+            model.addAttribute("casa", casaRepository.findById(Long.parseLong(casaIdParam)).orElse(null));
+            model.addAttribute("pet", pet);
             return "reserva-form";
         }
 
@@ -90,6 +97,7 @@ public class ReservaController {
         } catch (Exception e) {
             model.addAttribute("erro", "Datas inválidas.");
             model.addAttribute("casa", casa);
+            model.addAttribute("pet", pet);
             return "reserva-form";
         }
 
@@ -97,6 +105,7 @@ public class ReservaController {
         if (dias < 1) {
             model.addAttribute("erro", "A data de fim deve ser posterior à data de início.");
             model.addAttribute("casa", casa);
+            model.addAttribute("pet", pet);
             return "reserva-form";
         }
 

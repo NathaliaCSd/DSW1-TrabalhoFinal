@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -8,47 +9,49 @@
     <link rel="stylesheet" th:href="@{/css/style.css}" />
     <link rel="stylesheet" th:href="@{/css/responsive.css}" />
 </head>
+
 <body class="main-layout">
-<div class="container mt-5">
-    <header class="mb-4">
-        <h1 th:text="${pet != null} ? #{pet.form.title.edit} : #{pet.form.title.create}">Formulário Pet</h1>
-    </header>
+    <div class="container mt-5">
+        <header class="mb-4">
+            <h1 th:text="${pet != null} ? #{pet.form.title.edit} : #{pet.form.title.create}">Formulário Pet</h1>
+        </header>
 
-    <div class="alert alert-danger" th:if="${erro != null}" th:text="${erro}"></div>
+        <div class="alert alert-danger" th:if="${erro != null}" th:text="${erro}"></div>
 
-    <form th:action="@{/pets/salvar}" method="post">
-        <input type="hidden" name="id" th:if="${pet != null}" th:value="${pet.id}" />
+        <form th:action="@{/pets/salvar}" method="post">
+            <input type="hidden" name="id" th:if="${pet != null}" th:value="${pet.id}" />
 
-        <div class="form-group">
-            <label th:text="#{pet.form.name}">Nome</label>
-            <input class="form-control" type="text" name="nome" th:value="${pet.nome}" required />
-        </div>
-        <div class="form-group">
-            <label th:text="#{pet.form.breed}">Raça</label>
-            <input class="form-control" type="text" name="raca" th:value="${pet.raca}" required />
-        </div>
-        <div class="form-group">
-            <label th:text="#{pet.form.age}">Idade</label>
-            <input class="form-control" type="number" name="idade" th:value="${pet.idade}" required />
-        </div>
-        <div class="form-group">
-            <label th:text="#{pet.form.size}">Porte</label>
-            <input class="form-control" type="text" name="porte" th:value="${pet.porte}" required />
-        </div>
-        <div class="form-group form-check">
-            <input class="form-check-input" type="checkbox" name="castrado" id="castrado" th:checked="${pet != null and pet.castrado}" />
-            <label class="form-check-label" for="castrado" th:text="#{pet.form.neutered}">Castrado</label>
-        </div>
-        <div class="form-group">
-            <label th:text="#{pet.form.description}">Descrição</label>
-            <textarea class="form-control" name="descricao" rows="4" th:text="${pet.descricao}"></textarea>
-        </div>
-        <button class="btn btn-primary" type="submit" th:text="#{button.save}">Salvar</button>
-        <a class="btn btn-secondary" th:href="@{/pets}" th:text="#{button.back}">Voltar</a>
-    </form>
-</div>
-<script th:src="@{/js/jquery.min.js}"></script>
-<script th:src="@{/js/bootstrap.min.js}"></script>
-<script th:src="@{/js/main.js}"></script>
+            <div class="form-group">
+                <label th:text="#{pet.form.name}">Nome</label>
+                <input class="form-control" type="text" name="nome" th:value="${pet.nome}" required />
+            </div>
+            <div class="form-group">
+                <label th:text="#{pet.form.breed}">Raça</label>
+                <input class="form-control" type="text" name="raca" th:value="${pet.raca}" required />
+            </div>
+            <div class="form-group">
+                <label th:text="#{pet.form.age}">Idade</label>
+                <input class="form-control" type="number" name="idade" th:value="${pet.idade}" required />
+            </div>
+            <div class="form-group">
+                <label th:text="#{pet.form.size}">Porte</label>
+                <input class="form-control" type="text" name="porte" th:value="${pet.porte}" required />
+            </div>
+            <div class="form-group form-check">
+                <input type="checkbox" th:checked="${pet != null and pet.castrado == true}" />
+                <label class="form-check-label" for="castrado" th:text="#{pet.form.neutered}">Castrado</label>
+            </div>
+            <div class="form-group">
+                <label th:text="#{pet.form.description}">Descrição</label>
+                <textarea class="form-control" name="descricao" rows="4" th:text="${pet.descricao}"></textarea>
+            </div>
+            <button class="btn btn-primary" type="submit" th:text="#{button.save}">Salvar</button>
+            <a class="btn btn-secondary" th:href="@{/pets}" th:text="#{button.back}">Voltar</a>
+        </form>
+    </div>
+    <script th:src="@{/js/jquery.min.js}"></script>
+    <script th:src="@{/js/bootstrap.min.js}"></script>
+    <script th:src="@{/js/main.js}"></script>
 </body>
+
 </html>

@@ -30,7 +30,7 @@ public class Pet {
     private String porte;
 
     @Column(nullable = false)
-    private Boolean castrado;
+    private boolean castrado;
 
     @Column(length = 512)
     private String descricao;
