@@ -29,7 +29,7 @@ public class PetController {
         Usuario usuario = getUsuarioLogado(request);
         Pet petLogado = getPetLogado(request);
         List<Pet> lista;
-        if (usuario != null && !"ADMIN".equals(usuario.getPapel())) {
+        if (usuario != null && !usuario.isAdmin()) {
             lista = petRepository.findByDono(usuario);
         } else {
             lista = petRepository.findAll();
@@ -56,7 +56,7 @@ public class PetController {
         Pet pet = petRepository.findById(id).orElse(null);
         Usuario usuario = getUsuarioLogado(request);
         Pet petLogado = getPetLogado(request);
-        if (pet == null || (usuario == null || !"ADMIN".equals(usuario.getPapel()))
+        if (pet == null || (usuario == null || !usuario.isAdmin())
                 && (petLogado == null || !petLogado.getId().equals(pet.getId()))) {
             return "redirect:/pets";
         }
@@ -72,7 +72,7 @@ public class PetController {
         Pet pet = petRepository.findById(id).orElse(null);
         Usuario usuario = getUsuarioLogado(request);
         Pet petLogado = getPetLogado(request);
-        if (pet == null || ((usuario == null || !"ADMIN".equals(usuario.getPapel()))
+        if (pet == null || ((usuario == null || !usuario.isAdmin())
                 && (petLogado == null || !petLogado.getId().equals(pet.getId())))) {
             return "redirect:/pets";
         }
@@ -166,7 +166,7 @@ public class PetController {
         Long id = Long.parseLong(request.getParameter("id"));
         Pet pet = petRepository.findById(id).orElse(null);
         // só seleciona se o pet pertence ao usuário ou se é ADMIN
-        if (pet != null && ("ADMIN".equals(usuario.getPapel()) || pet.getDono().getId().equals(usuario.getId()))) {
+        if (pet != null && (usuario.isAdmin() || pet.getDono().getId().equals(usuario.getId()))) {
             HttpSession session = request.getSession();
             session.setAttribute("petLogado", pet);
         }

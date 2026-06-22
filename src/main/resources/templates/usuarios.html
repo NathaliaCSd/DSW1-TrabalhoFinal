@@ -1,52 +1,56 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8" />
     <title th:text="#{users.title} + ' | ' + #{app.title}">Usuários</title>
     <link rel="stylesheet" th:href="@{/css/style.css}" />
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
 </head>
+
 <body>
-<div class="container">
-    <header>
-        <h1 th:text="#{users.title}"></h1>
-        <p th:text="#{users.subtitle}"></p>
-    </header>
+    <div class="container">
+        <header>
+            <h1 th:text="#{users.title}"></h1>
+            <p th:text="#{users.subtitle}"></p>
+        </header>
 
-    <div class="topnav">
-        <span th:text="#{topnav.hello(${session.usuarioLogado.nome})}"></span>
-        <a th:href="@{/}">[[#{topnav.home}]]</a>
-        <a th:href="@{/pets}">[[#{button.view_pets}]]</a>
-        <a th:href="@{/usuario/logout}">[[#{button.logout}]]</a>
+        <div class="topnav">
+            <span th:text="#{topnav.hello(${session.usuarioLogado.nome})}"></span>
+            <a th:href="@{/}">[[#{topnav.home}]]</a>
+            <a th:href="@{/pets}">[[#{button.view_pets}]]</a>
+            <a th:href="@{/usuario/logout}">[[#{button.logout}]]</a>
+        </div>
+
+        <p><a class="button" th:href="@{/usuario/novo}">[[#{button.new_user}]]</a></p>
+
+        <div class="box" th:if="${usuarios == null or #lists.isEmpty(usuarios)}">[[#{no.users}]]</div>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>[[#{user.form.name}]]</th>
+                    <th>[[#{user.form.login}]]</th>
+                    <th>[[#{user.form.role}]]</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="usuario : ${usuarios}">
+                    <td th:text="${usuario.id}"></td>
+                    <td th:text="${usuario.nome}"></td>
+                    <td th:text="${usuario.login}"></td>
+                    <td th:text="${#strings.listJoin(usuario.papeis, ', ')}"></td>
+                    <td>
+                        <a class="button small" th:href="@{/usuario/edicao(id=${usuario.id})}">[[#{button.edit}]]</a>
+                        <a class="button small button-danger" th:href="@{/usuario/excluir(id=${usuario.id})}"
+                            th:onclick="|return confirm('${#{confirm.delete}}');|">[[#{button.delete}]]</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-
-    <p><a class="button" th:href="@{/usuario/novo}">[[#{button.new_user}]]</a></p>
-
-    <div class="box" th:if="${usuarios == null or #lists.isEmpty(usuarios)}">[[#{no.users}]]</div>
-
-    <table class="table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>[[#{user.form.name}]]</th>
-                <th>[[#{user.form.login}]]</th>
-                <th>[[#{user.form.role}]]</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="usuario : ${usuarios}">
-                <td th:text="${usuario.id}"></td>
-                <td th:text="${usuario.nome}"></td>
-                <td th:text="${usuario.login}"></td>
-                <td th:text="${usuario.papel}"></td>
-                <td>
-                    <a class="button small" th:href="@{/usuario/edicao(id=${usuario.id})}">[[#{button.edit}]]</a>
-                    <a class="button small button-danger" th:href="@{/usuario/excluir(id=${usuario.id})}" th:onclick="|return confirm('${#{confirm.delete}}');|">[[#{button.delete}]]</a>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</div>
 </body>
+
 </html>

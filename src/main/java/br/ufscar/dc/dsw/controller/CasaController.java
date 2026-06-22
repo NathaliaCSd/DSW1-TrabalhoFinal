@@ -13,6 +13,8 @@ import br.ufscar.dc.dsw.dao.ReservaRepository;
 import br.ufscar.dc.dsw.domain.Casa;
 import br.ufscar.dc.dsw.domain.Pet;
 import br.ufscar.dc.dsw.domain.Usuario;
+import br.ufscar.dc.dsw.domain.*;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
@@ -30,33 +32,52 @@ public class CasaController {
 
     @GetMapping
     public String listar(HttpServletRequest request, Model model) {
-        // Recebe os dados de sessão e consulta todas as casas no banco.
         Usuario usuario = getUsuarioLogado(request);
         Pet pet = getPetLogado(request);
-        List<Casa> lista = casaRepository.findAll();
-        model.addAttribute("casas", lista);
+
+        if (usuario != null && usuario.isDonoDeHospedagem() && !usuario.isAdmin()) {
+            List<Casa> minhasCasas = casaRepository.findByUsuario(usuario);
+            List<Casa> outrasCasas = casaRepository.findByUsuarioNot(usuario);
+            model.addAttribute("minhasCasas", minhasCasas);
+            model.addAttribute("outrasCasas", outrasCasas);
+            model.addAttribute("modoAnfitriao", true);
+        } else {
+            // admin e visitantes veem tudo junto
+            model.addAttribute("casas", casaRepository.findAll());
+            model.addAttribute("modoAnfitriao", false);
+        }
+
         model.addAttribute("usuarioLogado", usuario);
         model.addAttribute("petLogado", pet);
         return "casas";
     }
 
     @GetMapping("/novo")
-    public String solicitarFormulario(HttpServletRequest request) {
+    public String solicitarFormulario(HttpServletRequest request, Model model) {
         Usuario usuario = getUsuarioLogado(request);
-        if (usuario == null || !"ADMIN".equals(usuario.getPapel())) {
+        if (usuario == null || (!usuario.isDonoDeHospedagem() && !usuario.isAdmin())) {
             return "redirect:/casas";
         }
+        model.addAttribute("casa", new Casa());
         return "casa-form";
     }
 
     @GetMapping("/edicao")
     public String editar(HttpServletRequest request, Model model) {
         Usuario usuario = getUsuarioLogado(request);
-        if (usuario == null || !"ADMIN".equals(usuario.getPapel())) {
+        if (usuario == null)
             return "redirect:/casas";
-        }
+
         Long id = Long.parseLong(request.getParameter("id"));
         Casa casa = casaRepository.findById(id).orElse(null);
+        if (casa == null)
+            return "redirect:/casas";
+
+        //admin edita qualquer casa, anfitrião só edita as suas
+        if (!usuario.isAdmin() && !casa.getUsuario().getId().equals(usuario.getId())) {
+            return "redirect:/casas";
+        }
+
         model.addAttribute("casa", casa);
         return "casa-form";
     }
@@ -64,10 +85,20 @@ public class CasaController {
     @GetMapping("/excluir")
     public String excluir(HttpServletRequest request) {
         Usuario usuario = getUsuarioLogado(request);
-        if (usuario == null || !"ADMIN".equals(usuario.getPapel())) {
+        if (usuario == null)
+            return "redirect:/casas";
+
+        Long id = Long.parseLong(request.getParameter("id"));
+        Casa casa = casaRepository.findById(id).orElse(null);
+        if (casa == null)
+            return "redirect:/casas";
+
+        //garantindo os privilegios 
+        //admin exclui qualquer casa, anfitrião só exclui as suas
+        if (!usuario.isAdmin() && !casa.getUsuario().getId().equals(usuario.getId())) {
             return "redirect:/casas";
         }
-        Long id = Long.parseLong(request.getParameter("id"));
+
         reservaRepository.deleteByCasaId(id);
         casaRepository.deleteById(id);
         return "redirect:/casas";
@@ -75,11 +106,12 @@ public class CasaController {
 
     @PostMapping("/salvar")
     public String salvar(HttpServletRequest request, Model model) {
-        // Recebe o POST do formulário Thymeleaf e salva/atualiza a entidade Casa no banco.
         Usuario usuario = getUsuarioLogado(request);
-        if (usuario == null || !"ADMIN".equals(usuario.getPapel())) {
+        //admin e anfitrião podem salvar
+        if (usuario == null || (!usuario.isAdmin() && !usuario.isDonoDeHospedagem())) {
             return "redirect:/casas";
         }
+
         String idParam = request.getParameter("id");
         String nome = request.getParameter("nome");
         String endereco = request.getParameter("endereco");
@@ -94,23 +126,28 @@ public class CasaController {
             capacidade = Integer.parseInt(capacidadeParam);
         } catch (NumberFormatException e) {
             model.addAttribute("erro", "Preencha corretamente diária e capacidade.");
+            model.addAttribute("casa", new Casa());
             return "casa-form";
         }
 
-        Casa casa = new Casa();
+        Casa casa;
         if (idParam != null && !idParam.isBlank()) {
             Long id = Long.parseLong(idParam);
             casa = casaRepository.findById(id).orElse(new Casa());
-            casa.setId(id);
+            // anfitrião não pode editar casa de outro anfitriao
+            if (!usuario.isAdmin() && !casa.getUsuario().getId().equals(usuario.getId())) {
+                return "redirect:/casas";
+            }
+        } else {
+            casa = new Casa();
+            casa.setUsuario(usuario); // ✅ associa ao anfitrião logado na criação
         }
+
         casa.setNome(nome);
         casa.setEndereco(endereco);
         casa.setDescricao(descricao);
         casa.setDiaria(diaria);
         casa.setCapacidade(capacidade);
-        if (casa.getUsuario() == null) {
-            casa.setUsuario(usuario);
-        }
         casaRepository.save(casa);
         return "redirect:/casas";
     }

@@ -2,12 +2,17 @@ package br.ufscar.dc.dsw.domain;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
@@ -28,8 +33,10 @@ public class Usuario {
     @Column(nullable = false)
     private String senha;
 
-    @Column(length = 10)
-    private String papel;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "usuario_papeis", joinColumns = @JoinColumn(name = "usuario_id"))
+    @Column(name = "papeis")
+    private List<String> papeis = new ArrayList<>();
 
     @OneToMany(mappedBy = "dono")
     private List<Pet> pets = new ArrayList<>();
@@ -44,19 +51,19 @@ public class Usuario {
         this.id = id;
     }
 
-    public Usuario(String nome, String login, String senha, String papel) {
+    public Usuario(String nome, String login, String senha, String papeis) {
         this.nome = nome;
         this.login = login;
         this.senha = senha;
-        this.papel = papel;
+        this.papeis = Arrays.asList(papeis.split(","));
     }
 
-    public Usuario(Long id, String nome, String login, String senha, String papel) {
+    public Usuario(Long id, String nome, String login, String senha, String papeis) {
         this.id = id;
         this.nome = nome;
         this.login = login;
         this.senha = senha;
-        this.papel = papel;
+        this.papeis = Arrays.asList(papeis.split(","));
     }
 
     public Long getId() {
@@ -91,12 +98,12 @@ public class Usuario {
         this.senha = senha;
     }
 
-    public String getPapel() {
-        return papel;
+    public List<String> getPapeis() {
+        return papeis;
     }
 
-    public void setPapel(String papel) {
-        this.papel = papel;
+    public void setPapeis(List<String> papeis) {
+        this.papeis = papeis;
     }
 
     public List<Pet> getPets() {
@@ -113,5 +120,18 @@ public class Usuario {
 
     public void setCasas(List<Casa> casas) {
         this.casas = casas;
+    }
+
+    // métodos auxiliares
+    public boolean isDonoDePet() {
+        return papeis.contains("DONO_PET");
+    }
+
+    public boolean isDonoDeHospedagem() {
+        return papeis.contains("DONO_HOSPEDAGEM");
+    }
+
+    public boolean isAdmin() {
+        return papeis.contains("ADMIN");
     }
 }

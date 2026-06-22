@@ -4,8 +4,9 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-<!-- ✅ CORRETO -->
-<title th:text="#{app.title}">PetBnB</title>    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" href="css/bootstrap.min.css" />
+    <!-- ✅ CORRETO -->
+    <title th:text="#{app.title}">PetBnB</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" href="css/bootstrap.min.css" />
     <link rel="stylesheet" th:href="@{/css/style.css}" href="css/style.css" />
     <link rel="stylesheet" th:href="@{/css/style1.css}" href="css/style1.css" />
     <link rel="stylesheet" th:href="@{/css/responsive.css}" href="css/responsive.css" />
@@ -69,8 +70,24 @@
                     <a class="button" th:href="@{/usuario/perfil}">Meu Perfil</a>
                     <a class="button" th:href="@{/casas}">Ver Casas</a>
                     <a class="button" th:href="@{/pets}">Ver Pets</a>
-                    <a class="button" th:if="${session.usuarioLogado.papel == 'ADMIN'}"
-                        th:href="@{/usuario/lista}">Gerenciar Usuários</a>
+                    <!-- Mostrar botão de adicionar casa para donos de hospedagem -->
+                    <a class="button"
+                        th:if="${session.usuarioLogado != null and session.usuarioLogado.donoDeHospedagem}"
+                        th:href="@{/casas/novo}">
+                        Adicionar Casa
+                    </a>
+
+                    <!-- mostra pets só para dono de pet -->
+                    <a class="button" th:if="${session.usuarioLogado != null and session.usuarioLogado.donoDePet}"
+                        th:href="@{/pets}">
+                        Meus Pets
+                    </a>
+
+                    <!-- Admin -->
+                    <a class="button" th:if="${session.usuarioLogado != null and session.usuarioLogado.admin}"
+                        th:href="@{/usuario/lista}">
+                        Gerenciar Usuários
+                    </a>
                     <a class="button" th:href="@{/usuario/logout}">Logout</a>
                 </div>
                 <div th:if="${session.petLogado == null} and ${session.usuarioLogado == null}">

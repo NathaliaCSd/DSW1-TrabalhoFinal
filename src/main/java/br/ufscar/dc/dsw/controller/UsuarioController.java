@@ -1,6 +1,8 @@
 package br.ufscar.dc.dsw.controller;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -56,7 +58,7 @@ public class UsuarioController {
     @GetMapping("/lista")
     public String listar(HttpServletRequest request, Model model) {
         Usuario usuario = getUsuarioLogado(request);
-        if (usuario == null || !"ADMIN".equals(usuario.getPapel())) {
+        if (usuario == null || !usuario.isAdmin()) {
             return "redirect:/";
         }
         List<Usuario> lista = usuarioRepository.findAll();
@@ -67,7 +69,7 @@ public class UsuarioController {
     @GetMapping("/novo")
     public String solicitarFormulario(HttpServletRequest request) {
         Usuario usuario = getUsuarioLogado(request);
-        if (usuario == null || !"ADMIN".equals(usuario.getPapel())) {
+        if (usuario == null || !usuario.isAdmin()) {
             return "redirect:/";
         }
         return "usuario-form";
@@ -76,7 +78,7 @@ public class UsuarioController {
     @GetMapping("/edicao")
     public String editar(HttpServletRequest request, Model model) {
         Usuario usuario = getUsuarioLogado(request);
-        if (usuario == null || !"ADMIN".equals(usuario.getPapel())) {
+        if (usuario == null || !usuario.isAdmin()) {
             return "redirect:/";
         }
         Long id = Long.parseLong(request.getParameter("id"));
@@ -88,7 +90,7 @@ public class UsuarioController {
     @GetMapping("/excluir")
     public String excluir(HttpServletRequest request) {
         Usuario usuario = getUsuarioLogado(request);
-        if (usuario == null || !"ADMIN".equals(usuario.getPapel())) {
+        if (usuario == null || !usuario.isAdmin()) {
             return "redirect:/";
         }
         Long id = Long.parseLong(request.getParameter("id"));
@@ -101,6 +103,7 @@ public class UsuarioController {
         String nome = request.getParameter("nome");
         String login = request.getParameter("login");
         String senha = request.getParameter("senha");
+        String[] papeis = request.getParameterValues("papeis");
 
         if (nome == null || login == null || senha == null || nome.isBlank() || login.isBlank() || senha.isBlank()) {
             model.addAttribute("erro", "Preencha todos os campos para criar a conta.");
@@ -113,6 +116,10 @@ public class UsuarioController {
         }
 
         Usuario usuario = new Usuario(nome, login, senha, "USER");
+        if (papeis != null && papeis.length > 0) {
+            usuario.setPapeis(Arrays.asList(papeis));
+        }
+
         usuarioRepository.save(usuario);
         model.addAttribute("mensagem", "Conta criada com sucesso. Faça login abaixo.");
         return "login";
@@ -154,7 +161,7 @@ public class UsuarioController {
 
         Usuario usuarioSalvo;
         if (idParam == null || idParam.isBlank()) {
-            if (!"ADMIN".equals(usuario.getPapel())) {
+            if (!usuario.isAdmin()) {
                 return "redirect:/";
             }
             if (senha == null || senha.isBlank()) {
@@ -177,7 +184,7 @@ public class UsuarioController {
                 return "redirect:/usuario/lista";
             }
             boolean isOwnProfile = usuarioSalvo.getId().equals(usuario.getId());
-            if (!"ADMIN".equals(usuario.getPapel()) && !isOwnProfile) {
+            if (!usuario.isAdmin() && !isOwnProfile) {
                 return "redirect:/";
             }
             if (senha == null || senha.isBlank()) {
@@ -191,8 +198,10 @@ public class UsuarioController {
             usuarioSalvo.setNome(nome);
             usuarioSalvo.setLogin(login);
             usuarioSalvo.setSenha(senha);
-            if (papel != null && !papel.isBlank() && "ADMIN" .equals(usuario.getPapel())) {
-                usuarioSalvo.setPapel(papel);
+            if (papel != null && !papel.isBlank() && usuario.isAdmin()) {
+                List<String> listaPapeis = new ArrayList<>();
+                listaPapeis.add(papel);
+                usuarioSalvo.setPapeis(listaPapeis);
             }
         }
         usuarioRepository.save(usuarioSalvo);

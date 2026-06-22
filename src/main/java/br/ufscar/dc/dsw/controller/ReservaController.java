@@ -36,7 +36,7 @@ public class ReservaController {
         Usuario usuario = getUsuarioLogado(request);
         Pet pet = getPetLogado(request);
         List<Reserva> lista;
-        if (usuario != null && "ADMIN".equals(usuario.getPapel())) {
+        if (usuario != null && usuario.isAdmin()) {
             lista = reservaRepository.findAll();
         } else if (pet != null) {
             lista = reservaRepository.findByPetId(pet.getId());
