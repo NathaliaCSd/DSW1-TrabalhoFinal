@@ -1,0 +1,33 @@
+### Listar todas
+GET http://localhost:8080/reservas/api
+
+### Buscar por id
+GET http://localhost:8080/reservas/api/1
+
+### Buscar por pet
+GET http://localhost:8080/reservas/api/pet/1
+
+### Criar
+POST http://localhost:8080/reservas/api
+Content-Type: application/json
+
+{
+  "dataInicio": "2025-07-10",
+  "dataFim": "2025-07-15",
+  "pet": { "id": 1 },
+  "casa": { "id": 1 }
+}
+
+### Atualizar
+PUT http://localhost:8080/reservas/api/1
+Content-Type: application/json
+
+{
+  "dataInicio": "2025-08-01",
+  "dataFim": "2025-08-05",
+  "pet": { "id": 1 },
+  "casa": { "id": 2 }
+}
+
+### Deletar
+DELETE http://localhost:8080/reservas/api/1
