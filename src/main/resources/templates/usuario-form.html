@@ -9,48 +9,200 @@
 </head>
 
 <body>
-    <div class="container">
+    <div class="container mt-4">
         <header>
-            <h1 th:text="${usuario != null} ? #{user.form.title.edit} : #{user.form.title.create}"></h1>
+            <!-- Barra de idioma -->
+            <div class="lang-selector text-end px-3 py-1" style="background:#f8f8f8; font-size:0.85rem;">
+                <strong th:text="#{lang.select}">Idioma:</strong>
+                <a th:href="@{?(lang=pt_BR)}" th:text="#{lang.portuguese}">Português</a> |
+                <a th:href="@{?(lang=en)}" th:text="#{lang.english}">English</a>
+            </div>
+
+            <div class="container">
+                <div class="row align-items-center py-2">
+
+                    <!-- Logo -->
+                    <div class="col-md-3 logo_section">
+                        <div class="logo">
+                            <a th:href="@{/}">
+                                <img th:src="@{/images/supercao.png}" src="images/supercao.png" alt="PetBnB" />
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Navegação -->
+                    <div class="col-md-9">
+                        <div class="navigation">
+                            <ul class="nav justify-content-end">
+
+                                <!-- sempre visível -->
+                                <li class="nav-item">
+                                    <a class="nav-link" th:href="@{/}" th:text="#{topnav.home}">Início</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" th:href="@{/casas}" th:text="#{button.view_houses}">Ver
+                                        casas</a>
+                                </li>
+
+                                <!-- visitante não logado -->
+                                <li class="nav-item" th:if="${session.usuarioLogado == null}">
+                                    <a class="nav-link btn btn-primary text-white ms-2" th:href="@{/usuario/login}"
+                                        th:text="#{button.login}">Entrar</a>
+                                </li>
+
+                                <!-- ADMIN -->
+                                <li class="nav-item"
+                                    th:if="${session.usuarioLogado != null and session.usuarioLogado.admin}">
+                                    <a class="nav-link" th:href="@{/usuario/lista}"
+                                        th:text="#{button.manage_users}">Usuários</a>
+                                </li>
+
+                                <!-- DONO_PET -->
+                                <li class="nav-item"
+                                    th:if="${session.usuarioLogado != null and session.usuarioLogado.donoDePet}">
+                                    <a class="nav-link" th:href="@{/pets}" th:text="#{button.view_pets}">Meus pets</a>
+                                </li>
+                                <li class="nav-item"
+                                    th:if="${session.usuarioLogado != null and session.usuarioLogado.donoDePet and session.petLogado != null}">
+                                    <a class="nav-link" th:href="@{/reservas}"
+                                        th:text="#{button.my_reservations}">Reservas</a>
+                                </li>
+                                <li class="nav-item"
+                                    th:if="${session.usuarioLogado != null and session.usuarioLogado.donoDePet and session.petLogado != null}">
+                                    <a class="nav-link text-warning" th:href="@{/pets/sair}"
+                                        th:text="#{button.logout_pet}">Sair do pet</a>
+                                </li>
+
+                                <!-- DONO_HOSPEDAGEM -->
+                                <li class="nav-item"
+                                    th:if="${session.usuarioLogado != null and session.usuarioLogado.donoDeHospedagem}">
+                                    <a class="nav-link" th:href="@{/casas/novo}" th:text="#{button.add_house}">Adicionar
+                                        Casa</a>
+                                </li>
+
+                                <!-- usuário logado: nome + sair -->
+                                <li class="nav-item" th:if="${session.usuarioLogado != null}">
+                                    <span class="nav-link text-muted"
+                                        th:text="#{topnav.hello(${session.usuarioLogado.nome})}">Olá</span>
+                                </li>
+                                <li class="nav-item" th:if="${session.usuarioLogado != null}">
+                                    <a class="nav-link btn btn-danger text-white ms-2" th:href="@{/usuario/logout}"
+                                        th:text="#{button.logout}">Sair</a>
+                                </li>
+
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </header>
 
-        <div class="alert alert-error" th:if="${erro != null}" th:text="${erro}"></div>
+        <div class="alert alert-danger" th:if="${erro != null}" th:text="${erro}"></div>
 
         <form th:action="@{/usuario/salvar}" method="post" class="form">
             <input type="hidden" name="id" th:if="${usuario != null}" th:value="${usuario.id}" />
 
-            <label th:text="#{user.form.name}"></label>
-            <input type="text" name="nome" th:value="${usuario.nome != null ? usuario.nome : ''}" required />
-
-
-            <label th:text="#{user.form.login}"></label>
-            <input type="text" name="login" th:value="${usuario.login != null ? usuario.login : ''}" required />
-
-            <label th:text="#{user.form.password}"></label>
-            <input type="password" name="senha" th:required="${usuario == null}" />
-
-            <label th:text="#{user.form.role}"></label>
-            <label th:text="#{user.form.role}"></label>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="papeis" value="DONO_PET" id="edit_donoPet"
-                    th:checked="${usuario != null and usuario.donoDePet}" />
-                <label class="form-check-label" for="edit_donoPet">Dono de Pet</label>
+            <!-- campos comuns -->
+            <div class="form-group mb-3">
+                <label th:text="#{user.form.name}">Nome</label>
+                <input class="form-control" type="text" name="nome" th:value="${usuario != null ? usuario.nome : ''}"
+                    required />
             </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="papeis" value="DONO_HOSPEDAGEM"
-                    id="edit_donoHospedagem" th:checked="${usuario != null and usuario.donoDeHospedagem}" />
-                <label class="form-check-label" for="edit_donoHospedagem">Dono de Hospedagem</label>
+            <div class="form-group mb-3">
+                <label th:text="#{user.form.login}">Login (e-mail)</label>
+                <input class="form-control" type="text" name="login" th:value="${usuario != null ? usuario.login : ''}"
+                    required />
             </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="papeis" value="ADMIN" id="edit_admin"
-                    th:checked="${usuario != null and usuario.admin}" />
-                <label class="form-check-label" for="edit_admin">Administrador</label>
+            <div class="form-group mb-3">
+                <label th:text="#{user.form.password}">Senha</label>
+                <input class="form-control" type="password" name="senha"
+                    th:placeholder="${usuario != null} ? 'Deixe em branco para manter' : ''" />
             </div>
 
-            <button type="submit" th:text="#{button.save}">Salvar</button>
+            <!-- papéis — só admin vê esta seção na criação/edição -->
+            <div sec:authorize="hasRole('ADMIN')">
+                <div class="form-group mb-3">
+                    <label th:text="#{user.form.role}">Perfil</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="papeis" value="DONO_PET" id="chk_donoPet"
+                            th:checked="${usuario != null and usuario.donoDePet}" />
+                        <label class="form-check-label" for="chk_donoPet"
+                            th:text="#{register.role.pet_owner}">Tutor</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="papeis" value="DONO_HOSPEDAGEM"
+                            id="chk_anfitriao" th:checked="${usuario != null and usuario.donoDeHospedagem}" />
+                        <label class="form-check-label" for="chk_anfitriao"
+                            th:text="#{register.role.host}">Anfitrião</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="papeis" value="ADMIN" id="chk_admin"
+                            th:checked="${usuario != null and usuario.admin}" />
+                        <label class="form-check-label" for="chk_admin" th:text="#{register.role.admin}">Admin</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- campos para Tutor -->
+            <div th:if="${usuario == null or usuario.donoDePet}">
+                <hr />
+                <h5>Dados do Tutor</h5>
+                <div class="form-group mb-3">
+                    <label>CPF</label>
+                    <input class="form-control" type="text" name="cpf" maxlength="11"
+                        th:value="${usuario instanceof T(br.ufscar.dc.dsw.domain.DonoDePet) ? usuario.cpf : ''}" />
+                </div>
+                <div class="form-group mb-3">
+                    <label th:text="#{user.form.phone}">Telefone</label>
+                    <input class="form-control" type="text" name="telefone"
+                        th:value="${usuario instanceof T(br.ufscar.dc.dsw.domain.DonoDePet) ? usuario.telefone : ''}" />
+                </div>
+                <div class="form-group mb-3">
+                    <label th:text="#{user.form.sex}">Sexo</label>
+                    <select class="form-control" name="sexo">
+                        <option value="">--</option>
+                        <option value="M"
+                            th:selected="${usuario instanceof T(br.ufscar.dc.dsw.domain.DonoDePet) and usuario.sexo == 'M'}">
+                            Masculino</option>
+                        <option value="F"
+                            th:selected="${usuario instanceof T(br.ufscar.dc.dsw.domain.DonoDePet) and usuario.sexo == 'F'}">
+                            Feminino</option>
+                    </select>
+                </div>
+                <div class="form-group mb-3">
+                    <label th:text="#{user.form.birthdate}">Data de Nascimento</label>
+                    <input class="form-control" type="date" name="dataNascimento"
+                        th:value="${usuario instanceof T(br.ufscar.dc.dsw.domain.DonoDePet) ? usuario.dataNascimento : ''}" />
+                </div>
+            </div>
+
+            <!-- campos Anfitrião -->
+            <div th:if="${usuario == null or usuario.donoDeHospedagem}">
+                <hr />
+                <h5>Dados do Anfitrião</h5>
+                <div class="form-group mb-3">
+                    <label>CNPJ</label>
+                    <input class="form-control" type="text" name="cnpj" maxlength="14"
+                        th:value="${usuario instanceof T(br.ufscar.dc.dsw.domain.Anfitriao) ? usuario.cnpj : ''}" />
+                </div>
+                <div class="form-group mb-3">
+                    <label th:text="#{user.form.service_description}">Descrição do serviço</label>
+                    <textarea class="form-control" name="descricaoServico" rows="3"
+                        th:text="${usuario instanceof T(br.ufscar.dc.dsw.domain.Anfitriao) ? usuario.descricaoServico : ''}"></textarea>
+                </div>
+            </div>
+
+            <button class="btn btn-primary mt-2" type="submit" th:text="#{button.save}">Salvar</button>
         </form>
-        <p><a th:href="@{/usuario/lista}" th:text="#{button.back}">Voltar</a></p>
+
+        <p class="mt-3">
+            <a th:href="@{/usuario/lista}" sec:authorize="hasRole('ADMIN')" th:text="#{button.back}">Voltar</a>
+            <a th:href="@{/}" sec:authorize="!hasRole('ADMIN')" th:text="#{topnav.home}">Início</a>
+        </p>
     </div>
+
+    <script th:src="@{/js/jquery.min.js}"></script>
+    <script th:src="@{/js/bootstrap.min.js}"></script>
 </body>
 
 </html>
