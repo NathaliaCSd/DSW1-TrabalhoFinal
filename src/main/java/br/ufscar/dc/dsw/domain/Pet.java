@@ -35,6 +35,12 @@ public class Pet {
     @Column(length = 512)
     private String descricao;
 
+    @Column
+    private String vacinas;
+
+    @Column(length = 512)
+    private String habitos;
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "dono_id", nullable = false)
     private Usuario dono;
@@ -46,17 +52,19 @@ public class Pet {
         this.id = id;
     }
 
-    public Pet(String nome, String raca, Integer idade, String porte, Boolean castrado, String descricao) {
+    public Pet(String nome, String raca, Integer idade, String porte, Boolean castrado, String descricao, String vacinas, String habitos) {
         this.nome = nome;
         this.raca = raca;
         this.idade = idade;
         this.porte = porte;
         this.castrado = castrado;
         this.descricao = descricao;
+        this.habitos = habitos;
+        this.vacinas = vacinas;
     }
 
-    public Pet(Long id, String nome, String raca, Integer idade, String porte, Boolean castrado, String descricao) {
-        this(nome, raca, idade, porte, castrado, descricao);
+    public Pet(Long id, String nome, String raca, Integer idade, String porte, Boolean castrado, String descricao, String vacinas, String habitos) {
+        this(nome, raca, idade, porte, castrado, descricao, habitos, vacinas);
         this.id = id;
     }
 
@@ -114,6 +122,22 @@ public class Pet {
 
     public void setDescricao(String descricao) {
         this.descricao = descricao;
+    }
+
+    public String getHabitos() {
+        return habitos;
+    }
+
+    public void setHabitos(String habitos) {
+        this.habitos = habitos;
+    }
+
+    public String getVacinas() {
+        return vacinas;
+    }
+
+    public void setVacinas(String vacinas) {
+        this.vacinas = vacinas;
     }
 
     public Usuario getDono() {

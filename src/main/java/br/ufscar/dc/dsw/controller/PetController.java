@@ -95,6 +95,9 @@ public class PetController {
         String porte = request.getParameter("porte");
         String castradoParam = request.getParameter("castrado");
         String descricao = request.getParameter("descricao");
+        String vacinas = request.getParameter("vacinas");
+        String habitos = request.getParameter("habitos");
+
         Usuario usuario = getUsuarioLogado(request);
         if (usuario == null) {
             return "redirect:/usuario/login";
@@ -123,7 +126,7 @@ public class PetController {
 
         Pet pet;
         if (idParam == null || idParam.isBlank()) {
-            pet = new Pet(nome, raca, idade, porte, castrado, descricao);
+            pet = new Pet(nome, raca, idade, porte, castrado, descricao, vacinas, habitos);
             pet.setDono(usuario);
         } else {
             Long id = Long.parseLong(idParam);
