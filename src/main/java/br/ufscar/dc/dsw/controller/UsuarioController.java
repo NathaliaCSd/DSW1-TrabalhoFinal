@@ -48,15 +48,6 @@ public class UsuarioController {
         return "usuario-form";
     }
 
-    @GetMapping("/logout")
-    public String logout(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate();
-        }
-        return "redirect:/";
-    }
-
     @GetMapping("/lista")
     public String listar(Model model) {
         model.addAttribute("usuarios", usuarioRepository.findAll());
@@ -82,21 +73,7 @@ public class UsuarioController {
         return "redirect:/usuario/lista";
     }
 
-    @PostMapping("/login")
-    public String login(HttpServletRequest request, Model model) {
-        String login = request.getParameter("login");
-        String senha = request.getParameter("senha");
-
-        Usuario usuario = usuarioRepository.findByLoginAndSenha(login, senha);
-        if (usuario == null) {
-            model.addAttribute("erro", "Login ou senha incorretos.");
-            return "login";
-        }
-
-        HttpSession session = request.getSession();
-        session.setAttribute("usuarioLogado", usuario);
-        return "redirect:/casas";
-    }
+    
 
     @PostMapping("/salvar")
     public String salvar(HttpServletRequest request, Authentication auth, Model model) {
