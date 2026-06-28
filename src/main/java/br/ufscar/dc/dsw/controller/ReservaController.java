@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import br.ufscar.dc.dsw.dao.CasaRepository;
 import br.ufscar.dc.dsw.dao.ReservaRepository;
+import br.ufscar.dc.dsw.dao.UsuarioRepository;
 import br.ufscar.dc.dsw.domain.Casa;
 import br.ufscar.dc.dsw.domain.Pet;
 import br.ufscar.dc.dsw.domain.Reserva;
@@ -25,24 +28,30 @@ public class ReservaController {
 
     private final ReservaRepository reservaRepository;
     private final CasaRepository casaRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    public ReservaController(ReservaRepository reservaRepository, CasaRepository casaRepository) {
+    public ReservaController(ReservaRepository reservaRepository,
+                             CasaRepository casaRepository,
+                             UsuarioRepository usuarioRepository) {
         this.reservaRepository = reservaRepository;
         this.casaRepository = casaRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
     @GetMapping
     public String listar(HttpServletRequest request, Model model) {
-        Usuario usuario = getUsuarioLogado(request);
+        Usuario usuario = getUsuarioLogado();
         Pet pet = getPetLogado(request);
+
         List<Reserva> lista;
         if (usuario != null && usuario.isAdmin()) {
             lista = reservaRepository.findAll();
         } else if (pet != null) {
             lista = reservaRepository.findByPetId(pet.getId());
         } else {
-            lista = List.of(); // lista vazia, não null
+            lista = List.of();
         }
+
         model.addAttribute("reservas", lista);
         model.addAttribute("petLogado", pet);
         model.addAttribute("usuarioLogado", usuario);
@@ -55,11 +64,13 @@ public class ReservaController {
         if (pet == null) {
             return "redirect:/pets";
         }
+
         Long casaId = Long.parseLong(request.getParameter("casaId"));
         Casa casa = casaRepository.findById(casaId).orElse(null);
         if (casa == null) {
             return "redirect:/casas";
         }
+
         model.addAttribute("casa", casa);
         model.addAttribute("pet", pet);
         return "reserva-form";
@@ -71,14 +82,18 @@ public class ReservaController {
         if (pet == null) {
             return "redirect:/pets";
         }
-        String casaIdParam = request.getParameter("casaId");
+
+        String casaIdParam    = request.getParameter("casaId");
         String dataInicioParam = request.getParameter("dataInicio");
-        String dataFimParam = request.getParameter("dataFim");
+        String dataFimParam   = request.getParameter("dataFim");
 
         if (casaIdParam == null || dataInicioParam == null || dataFimParam == null
                 || dataInicioParam.isBlank() || dataFimParam.isBlank()) {
             model.addAttribute("erro", "Preencha todos os dados da reserva.");
-            model.addAttribute("casa", casaRepository.findById(Long.parseLong(casaIdParam)).orElse(null));
+            if (casaIdParam != null) {
+                model.addAttribute("casa",
+                    casaRepository.findById(Long.parseLong(casaIdParam)).orElse(null));
+            }
             model.addAttribute("pet", pet);
             return "reserva-form";
         }
@@ -93,7 +108,7 @@ public class ReservaController {
         LocalDate dataFim;
         try {
             dataInicio = LocalDate.parse(dataInicioParam);
-            dataFim = LocalDate.parse(dataFimParam);
+            dataFim    = LocalDate.parse(dataFimParam);
         } catch (Exception e) {
             model.addAttribute("erro", "Datas inválidas.");
             model.addAttribute("casa", casa);
@@ -115,19 +130,16 @@ public class ReservaController {
         return "redirect:/reservas";
     }
 
-    private Usuario getUsuarioLogado(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session == null) {
-            return null;
-        }
-        return (Usuario) session.getAttribute("usuarioLogado");
+    private Usuario getUsuarioLogado() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()
+                || auth.getName().equals("anonymousUser")) return null;
+        return usuarioRepository.findByLogin(auth.getName());
     }
 
     private Pet getPetLogado(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
-        if (session == null) {
-            return null;
-        }
+        if (session == null) return null;
         return (Pet) session.getAttribute("petLogado");
     }
 }

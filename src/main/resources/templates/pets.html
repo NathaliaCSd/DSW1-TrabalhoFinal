@@ -12,20 +12,12 @@
 
 <body class="main-layout">
     <div class="container mt-5">
-        <header class="mb-4">
-            <h1 th:text="#{pets.title}">Pets</h1>
-            <p th:text="#{pets.subtitle}">Lista de pets</p>
-        </header>
 
-        <div class="mb-3">
-            <a class="btn btn-secondary" th:href="@{/}">[[#{topnav.home}]]</a>
-            <a class="btn btn-secondary" th:href="@{/casas}">[[#{button.view_houses}]]</a>
-            <a class="btn btn-primary" th:href="@{/pets/novo}">[[#{button.new_pet}]]</a>
-            <a class="btn btn-primary" th:if="${session.petLogado != null}"
-                th:href="@{/reservas}">[[#{button.my_reservations}]]</a>
-            <a class="btn btn-warning" th:if="${session.petLogado != null}"
-                th:href="@{/pets/sair}">[[#{button.logout_pet}]]</a>
-        </div>
+        <header th:replace="~{fragments/header :: header}"></header>
+
+        <h1 th:text="#{pets.title}">Pets</h1>
+        <p th:text="#{pets.subtitle}">Lista de pets</p>
+
 
         <div class="alert alert-info" th:if="${session.petLogado != null}">
             <strong th:text="#{label.selected_pet}">Pet selecionado:</strong>

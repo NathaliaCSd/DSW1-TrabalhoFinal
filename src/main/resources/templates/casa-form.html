@@ -11,9 +11,10 @@
 
 <body>
     <div class="container">
-        <header>
-            <h1 th:text="${casa != null} ? #{house.form.title.edit} : #{house.form.title.create}">Formulário Casa</h1>
-        </header>
+        <header th:replace="~{fragments/header :: header}"></header>
+
+        <h1 th:text="${casa != null} ? #{house.form.title.edit} : #{house.form.title.create}">Formulário Casa</h1>
+
 
         <form th:action="@{/casas/salvar}" method="post" class="form">
             <input type="hidden" name="id" th:if="${casa != null}" th:value="${casa.id}" />
@@ -27,10 +28,12 @@
             <textarea name="descricao" rows="4" th:text="${casa.descricao}"></textarea>
 
             <label th:text="#{house.form.daily}">Diária</label>
-            <input type="number" name="diaria" step="0.01" th:value="${casa.diaria != null ? casa.diaria : ''}" required />
+            <input type="number" name="diaria" step="0.01" th:value="${casa.diaria != null ? casa.diaria : ''}"
+                required />
 
             <label th:text="#{house.form.capacity}">Capacidade</label>
-            <input type="number" name="capacidade" th:value="${casa.capacidade != null ? casa.capacidade : ''}" required />
+            <input type="number" name="capacidade" th:value="${casa.capacidade != null ? casa.capacidade : ''}"
+                required />
 
 
             <button type="submit" th:text="#{button.save}">Salvar</button>

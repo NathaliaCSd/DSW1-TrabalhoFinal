@@ -16,6 +16,7 @@ import br.ufscar.dc.dsw.dao.ReservaRepository;
 import br.ufscar.dc.dsw.dao.UsuarioRepository;
 import br.ufscar.dc.dsw.domain.Casa;
 import br.ufscar.dc.dsw.domain.Pet;
+import br.ufscar.dc.dsw.domain.Reserva;
 import br.ufscar.dc.dsw.domain.Usuario;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -26,7 +27,7 @@ public class CasaController {
 
     private final CasaRepository casaRepository;
     private final ReservaRepository reservaRepository;
-    private final UsuarioRepository usuarioRepository; 
+    private final UsuarioRepository usuarioRepository;
 
     public CasaController(CasaRepository casaRepository,
                           ReservaRepository reservaRepository,
@@ -44,8 +45,11 @@ public class CasaController {
         if (usuario != null && usuario.isDonoDeHospedagem() && !usuario.isAdmin()) {
             List<Casa> minhasCasas = casaRepository.findByUsuario(usuario);
             List<Casa> outrasCasas = casaRepository.findByUsuarioNot(usuario);
+            List<Reserva> reservasVigentes = reservaRepository
+                    .findByCasaUsuarioAndDataInicioAfter(usuario, LocalDate.now());
             model.addAttribute("minhasCasas", minhasCasas);
             model.addAttribute("outrasCasas", outrasCasas);
+            model.addAttribute("reservasVigentes", reservasVigentes);
             model.addAttribute("modoAnfitriao", true);
         } else {
             model.addAttribute("casas", casaRepository.findAll());
@@ -59,7 +63,6 @@ public class CasaController {
 
     @GetMapping("/novo")
     public String solicitarFormulario(Model model) {
-        // SecurityConfig já garante que só anfitrião ou admin chega aqui
         model.addAttribute("casa", new Casa());
         return "casa-form";
     }
@@ -73,7 +76,6 @@ public class CasaController {
         Casa casa = casaRepository.findById(id).orElse(null);
         if (casa == null) return "redirect:/casas";
 
-        // admin edita qualquer casa, anfitrião só edita as suas
         if (!usuario.isAdmin() && !casa.getUsuario().getId().equals(usuario.getId())) {
             return "redirect:/casas";
         }
@@ -91,7 +93,6 @@ public class CasaController {
         Casa casa = casaRepository.findById(id).orElse(null);
         if (casa == null) return "redirect:/casas";
 
-        // admin exclui qualquer casa, anfitrião só exclui as suas
         if (!usuario.isAdmin() && !casa.getUsuario().getId().equals(usuario.getId())) {
             return "redirect:/casas";
         }
@@ -108,20 +109,19 @@ public class CasaController {
             return "redirect:/casas";
         }
 
-        String idParam       = request.getParameter("id");
-        String nome          = request.getParameter("nome");
-        String endereco      = request.getParameter("endereco");
-        String descricao     = request.getParameter("descricao");
-        String diariaParam   = request.getParameter("diaria");
+        String idParam         = request.getParameter("id");
+        String nome            = request.getParameter("nome");
+        String endereco        = request.getParameter("endereco");
+        String descricao       = request.getParameter("descricao");
+        String diariaParam     = request.getParameter("diaria");
         String capacidadeParam = request.getParameter("capacidade");
-        String cidade        = request.getParameter("cidade");
-        String estado        = request.getParameter("estado");
-        String pais          = request.getParameter("pais");
-        String dataDispParam = request.getParameter("dataDisponibilidade");
-        String durMinParam   = request.getParameter("duracaoMinima");
-        String durMaxParam   = request.getParameter("duracaoMaxima");
+        String cidade          = request.getParameter("cidade");
+        String estado          = request.getParameter("estado");
+        String pais            = request.getParameter("pais");
+        String dataDispParam   = request.getParameter("dataDisponibilidade");
+        String durMinParam     = request.getParameter("duracaoMinima");
+        String durMaxParam     = request.getParameter("duracaoMaxima");
 
-        // validação obrigatória
         if (nome == null || nome.isBlank() ||
             diariaParam == null || diariaParam.isBlank() ||
             capacidadeParam == null || capacidadeParam.isBlank()) {
@@ -143,16 +143,13 @@ public class CasaController {
 
         Casa casa;
         if (idParam != null && !idParam.isBlank()) {
-            // edição
             Long id = Long.parseLong(idParam);
             casa = casaRepository.findById(id).orElse(null);
             if (casa == null) return "redirect:/casas";
-            // anfitrião não pode editar casa de outro
             if (!usuario.isAdmin() && !casa.getUsuario().getId().equals(usuario.getId())) {
                 return "redirect:/casas";
             }
         } else {
-            // criação — associa ao usuário logado
             casa = new Casa();
             casa.setUsuario(usuario);
         }
@@ -166,7 +163,6 @@ public class CasaController {
         casa.setEstado(estado);
         casa.setPais(pais);
 
-        //com parse seguro
         if (dataDispParam != null && !dataDispParam.isBlank()) {
             try { casa.setDataDisponibilidade(LocalDate.parse(dataDispParam)); }
             catch (Exception ignored) {}
@@ -184,7 +180,6 @@ public class CasaController {
         return "redirect:/casas";
     }
 
-    // busca via Spring Security
     private Usuario getUsuarioLogado() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()

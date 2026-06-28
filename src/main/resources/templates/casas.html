@@ -12,10 +12,11 @@
 
 <body class="main-layout">
     <div class="container mt-5">
-        <header class="mb-4">
-            <h1 th:text="#{houses.title}">Casas</h1>
-            <p th:text="#{houses.subtitle}">Subtitulo</p>
-        </header>
+
+        <header th:replace="~{fragments/header :: header}"></header>
+
+        <h1 th:text="#{houses.title}">Casas</h1>
+        <p th:text="#{houses.subtitle}">Subtitulo</p>
 
         <div class="btn-group mb-4" role="group">
             <a class="btn btn-secondary" th:href="@{/}">[[#{topnav.home}]]</a>
@@ -91,6 +92,34 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <!-- Reservas vigentes — só aparece para anfitrião -->
+        <div th:if="${modoAnfitriao and reservasVigentes != null and !#lists.isEmpty(reservasVigentes)}">
+            <h3 class="mt-4">Hospedagens vigentes</h3>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Pet</th>
+                        <th>Casa</th>
+                        <th>Entrada</th>
+                        <th>Saída</th>
+                        <th>Total (R$)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="r : ${reservasVigentes}">
+                        <td th:text="${r.pet.nome}"></td>
+                        <td th:text="${r.casa.nome}"></td>
+                        <td th:text="${#temporals.format(r.dataInicio, 'dd/MM/yyyy')}"></td>
+                        <td th:text="${#temporals.format(r.dataFim, 'dd/MM/yyyy')}"></td>
+                        <td th:text="${r.total}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:if="${modoAnfitriao and (reservasVigentes == null or #lists.isEmpty(reservasVigentes))}">
+            <h3 class="mt-4">Hospedagens vigentes</h3>
+            <div class="alert alert-info">Nenhuma hospedagem vigente no momento.</div>
         </div>
 
         <div th:if="${!modoAnfitriao}">

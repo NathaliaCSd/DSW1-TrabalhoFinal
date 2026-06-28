@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -8,39 +9,44 @@
     <link rel="stylesheet" th:href="@{/css/style.css}" />
     <link rel="stylesheet" th:href="@{/css/responsive.css}" />
 </head>
+
 <body class="main-layout">
-<div class="container mt-5">
-    <header class="text-center mb-4">
+    <div class="container mt-5">
+
+        <header th:replace="~{fragments/header :: header}"></header>
+
         <h1 th:text="#{reservations.title}">Reservas</h1>
         <p th:text="#{reservations.subtitle}">Subtitulo</p>
-    </header>
 
-    <div class="mb-3">
-        <a class="btn btn-secondary" th:href="@{/casas}">[[#{button.view_houses}]]</a>
-        <a class="btn btn-primary" th:href="@{/pets}">[[#{button.select_pet}]]</a>
-    </div>
+        <div class="mb-3">
+            <a class="btn btn-secondary" th:href="@{/casas}">[[#{button.view_houses}]]</a>
+            <a class="btn btn-primary" th:href="@{/pets}">[[#{button.select_pet}]]</a>
+        </div>
 
-    <div class="alert alert-info" th:if="${reservas == null or #lists.isEmpty(reservas)}">
-        <span th:text="#{no.reservations}"></span>
-    </div>
+        <div class="alert alert-info" th:if="${reservas == null or #lists.isEmpty(reservas)}">
+            <span th:text="#{no.reservations}"></span>
+        </div>
 
-    <div class="row">
-        <div class="col-md-6 mb-4" th:each="reserva : ${reservas}">
-            <div class="card">
-                <div class="card-body">
-                    <h4 th:text="${reserva.casa.nome}"></h4>
-                    <p><strong th:text="#{label.pet}"></strong> <span th:text="${reserva.pet.nome}"></span></p>
-                    <p><strong th:text="#{label.address}"></strong> <span th:text="${reserva.casa.endereco}"></span></p>
-                    <p><strong th:text="#{label.arrival}"></strong> <span th:text="${reserva.dataInicio}"></span></p>
-                    <p><strong th:text="#{label.departure}"></strong> <span th:text="${reserva.dataFim}"></span></p>
-                    <p><strong th:text="#{label.total}"></strong> R$ <span th:text="${reserva.total}"></span></p>
+        <div class="row">
+            <div class="col-md-6 mb-4" th:each="reserva : ${reservas}">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 th:text="${reserva.casa.nome}"></h4>
+                        <p><strong th:text="#{label.pet}"></strong> <span th:text="${reserva.pet.nome}"></span></p>
+                        <p><strong th:text="#{label.address}"></strong> <span th:text="${reserva.casa.endereco}"></span>
+                        </p>
+                        <p><strong th:text="#{label.arrival}"></strong> <span th:text="${reserva.dataInicio}"></span>
+                        </p>
+                        <p><strong th:text="#{label.departure}"></strong> <span th:text="${reserva.dataFim}"></span></p>
+                        <p><strong th:text="#{label.total}"></strong> R$ <span th:text="${reserva.total}"></span></p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-<script th:src="@{/js/jquery.min.js}"></script>
-<script th:src="@{/js/bootstrap.min.js}"></script>
-<script th:src="@{/js/main.js}"></script>
+    <script th:src="@{/js/jquery.min.js}"></script>
+    <script th:src="@{/js/bootstrap.min.js}"></script>
+    <script th:src="@{/js/main.js}"></script>
 </body>
+
 </html>

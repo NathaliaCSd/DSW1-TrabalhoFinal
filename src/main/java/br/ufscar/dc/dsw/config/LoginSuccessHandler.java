@@ -21,6 +21,8 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
             HttpServletResponse response, Authentication authentication) throws IOException {
         Usuario usuario = usuarioRepository.findByLogin(authentication.getName());
 
+        request.getSession().setAttribute("usuarioLogado", usuario);
+
         if (usuario.isAdmin()) {
             response.sendRedirect("/usuario/lista");
         } else if (usuario.isDonoDePet()) {

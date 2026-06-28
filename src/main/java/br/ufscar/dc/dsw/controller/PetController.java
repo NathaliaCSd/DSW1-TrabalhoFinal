@@ -2,6 +2,8 @@ package br.ufscar.dc.dsw.controller;
 
 import java.util.List;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import br.ufscar.dc.dsw.dao.PetRepository;
+import br.ufscar.dc.dsw.dao.UsuarioRepository; 
 import br.ufscar.dc.dsw.domain.Pet;
 import br.ufscar.dc.dsw.domain.Usuario;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,14 +22,16 @@ import jakarta.servlet.http.HttpSession;
 public class PetController {
 
     private final PetRepository petRepository;
+    private final UsuarioRepository usuarioRepository; 
 
-    public PetController(PetRepository petRepository) {
+    public PetController(PetRepository petRepository, UsuarioRepository usuarioRepository) {
         this.petRepository = petRepository;
+        this.usuarioRepository = usuarioRepository; 
     }
 
     @GetMapping
     public String listar(HttpServletRequest request, Model model) {
-        Usuario usuario = getUsuarioLogado(request);
+        Usuario usuario = getUsuarioLogado();
         Pet petLogado = getPetLogado(request);
         List<Pet> lista;
         if (usuario != null && !usuario.isAdmin()) {
@@ -41,11 +46,7 @@ public class PetController {
     }
 
     @GetMapping("/novo")
-    public String solicitarFormulario(HttpServletRequest request, Model model) {
-        Usuario usuario = getUsuarioLogado(request);
-        if (usuario == null) {
-            return "redirect:/usuario/login";
-        }
+    public String solicitarFormulario(Model model) {
         model.addAttribute("pet", new Pet());
         return "pet-form";
     }
@@ -54,10 +55,9 @@ public class PetController {
     public String editar(HttpServletRequest request, Model model) {
         Long id = Long.parseLong(request.getParameter("id"));
         Pet pet = petRepository.findById(id).orElse(null);
-        Usuario usuario = getUsuarioLogado(request);
+        Usuario usuario = getUsuarioLogado();
         Pet petLogado = getPetLogado(request);
-        if (pet == null || (usuario == null || !usuario.isAdmin())
-                && (petLogado == null || !petLogado.getId().equals(pet.getId()))) {
+        if (pet == null || (!usuario.isAdmin() && !pet.getDono().getId().equals(usuario.getId()))) {
             return "redirect:/pets";
         }
         model.addAttribute("pet", pet);
@@ -70,47 +70,41 @@ public class PetController {
     public String excluir(HttpServletRequest request) {
         Long id = Long.parseLong(request.getParameter("id"));
         Pet pet = petRepository.findById(id).orElse(null);
-        Usuario usuario = getUsuarioLogado(request);
+        Usuario usuario = getUsuarioLogado();
         Pet petLogado = getPetLogado(request);
-        if (pet == null || ((usuario == null || !usuario.isAdmin())
-                && (petLogado == null || !petLogado.getId().equals(pet.getId())))) {
+        if (pet == null || (!usuario.isAdmin() && !pet.getDono().getId().equals(usuario.getId()))) {
             return "redirect:/pets";
         }
         petRepository.delete(pet);
         if (petLogado != null && petLogado.getId().equals(pet.getId())) {
             HttpSession session = request.getSession(false);
-            if (session != null) {
-                session.removeAttribute("petLogado");
-            }
+            if (session != null) session.removeAttribute("petLogado");
         }
         return "redirect:/pets";
     }
 
     @PostMapping("/salvar")
     public String salvar(HttpServletRequest request, Model model) {
-        String idParam = request.getParameter("id");
-        String nome = request.getParameter("nome");
-        String raca = request.getParameter("raca");
-        String idadeParam = request.getParameter("idade");
-        String porte = request.getParameter("porte");
+        String idParam       = request.getParameter("id");
+        String nome          = request.getParameter("nome");
+        String raca          = request.getParameter("raca");
+        String idadeParam    = request.getParameter("idade");
+        String porte         = request.getParameter("porte");
         String castradoParam = request.getParameter("castrado");
-        String descricao = request.getParameter("descricao");
-        String vacinas = request.getParameter("vacinas");
-        String habitos = request.getParameter("habitos");
+        String descricao     = request.getParameter("descricao");
+        String vacinas       = request.getParameter("vacinas");
+        String habitos       = request.getParameter("habitos");
 
-        Usuario usuario = getUsuarioLogado(request);
-        if (usuario == null) {
-            return "redirect:/usuario/login";
-        }
+        Usuario usuario = getUsuarioLogado();
 
-        if (nome == null || raca == null || idadeParam == null || porte == null || nome.isBlank() || raca.isBlank()
-                || idadeParam.isBlank() || porte.isBlank()) {
-            model.addAttribute("erro", "Preencha todos os campos obrigatórios.");
+        if (nome == null || raca == null || idadeParam == null || porte == null
+                || nome.isBlank() || raca.isBlank() || idadeParam.isBlank() || porte.isBlank()) {
             Pet petTemp = new Pet();
             petTemp.setNome(nome);
             petTemp.setRaca(raca);
             petTemp.setPorte(porte);
             model.addAttribute("pet", petTemp);
+            model.addAttribute("erro", "Preencha todos os campos obrigatórios.");
             return "pet-form";
         }
 
@@ -118,6 +112,7 @@ public class PetController {
         try {
             idade = Integer.parseInt(idadeParam);
         } catch (NumberFormatException e) {
+            model.addAttribute("pet", new Pet());
             model.addAttribute("erro", "Idade deve ser um número inteiro.");
             return "pet-form";
         }
@@ -131,30 +126,27 @@ public class PetController {
         } else {
             Long id = Long.parseLong(idParam);
             pet = petRepository.findById(id).orElse(null);
-            if (pet == null) {
-                return "redirect:/pets";
-            }
+            if (pet == null) return "redirect:/pets";
             pet.setNome(nome);
             pet.setRaca(raca);
             pet.setIdade(idade);
             pet.setPorte(porte);
             pet.setCastrado(castrado);
             pet.setDescricao(descricao);
-            if (pet.getDono() == null) {
-                pet.setDono(usuario);
-            }
+            pet.setVacinas(vacinas);
+            pet.setHabitos(habitos);
+            if (pet.getDono() == null) pet.setDono(usuario);
         }
+
         pet = petRepository.save(pet);
+
+        HttpSession session = request.getSession();
         if (idParam == null || idParam.isBlank()) {
-            HttpSession session = request.getSession();
             session.setAttribute("petLogado", pet);
         } else {
-            HttpSession session = request.getSession(false);
-            if (session != null) {
-                Pet petLogado = (Pet) session.getAttribute("petLogado");
-                if (petLogado != null && petLogado.getId().equals(pet.getId())) {
-                    session.setAttribute("petLogado", pet);
-                }
+            Pet petLogado = (Pet) session.getAttribute("petLogado");
+            if (petLogado != null && petLogado.getId().equals(pet.getId())) {
+                session.setAttribute("petLogado", pet);
             }
         }
         return "redirect:/pets";
@@ -162,16 +154,11 @@ public class PetController {
 
     @GetMapping("/selecionar")
     public String selecionar(HttpServletRequest request) {
-        Usuario usuario = getUsuarioLogado(request);
-        if (usuario == null) {
-            return "redirect:/usuario/login";
-        }
+        Usuario usuario = getUsuarioLogado();
         Long id = Long.parseLong(request.getParameter("id"));
         Pet pet = petRepository.findById(id).orElse(null);
-        // só seleciona se o pet pertence ao usuário ou se é ADMIN
         if (pet != null && (usuario.isAdmin() || pet.getDono().getId().equals(usuario.getId()))) {
-            HttpSession session = request.getSession();
-            session.setAttribute("petLogado", pet);
+            request.getSession().setAttribute("petLogado", pet);
         }
         return "redirect:/pets";
     }
@@ -179,25 +166,20 @@ public class PetController {
     @GetMapping("/sair")
     public String sair(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.removeAttribute("petLogado");
-        }
+        if (session != null) session.removeAttribute("petLogado");
         return "redirect:/pets";
     }
 
-    private Usuario getUsuarioLogado(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session == null) {
-            return null;
-        }
-        return (Usuario) session.getAttribute("usuarioLogado");
+    private Usuario getUsuarioLogado() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()
+                || auth.getName().equals("anonymousUser")) return null;
+        return usuarioRepository.findByLogin(auth.getName());
     }
 
     private Pet getPetLogado(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
-        if (session == null) {
-            return null;
-        }
+        if (session == null) return null;
         return (Pet) session.getAttribute("petLogado");
     }
 }

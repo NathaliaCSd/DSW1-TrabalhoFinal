@@ -108,6 +108,13 @@ h6 {
      box-sizing: border-box;
 }
 
+.home-banner-area{
+     background-image: url(/images/capa.jpg);
+     background-size: cover; 
+     background-position: center; 
+     background-repeat: no-repeat;
+}
+
 h1 a,
 h2 a,
 h3 a,
@@ -833,17 +840,6 @@ button {
      background-color: #ffffff;
 }
 
-@media (max-width: 767px) {
-     .reservation-page {
-          padding: 40px 0 60px;
-     }
-     .reservation-actions {
-          justify-content: center;
-     }
-}     margin-top: 10px !important;
-     font-weight: 500;
-     border-radius: 50px;
-}
 
 .main_form .send_btn:hover {
      background-color: #cca772;
